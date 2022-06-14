@@ -1,13 +1,22 @@
 import { Navbar } from "flowbite-react";
 import Link from "next/link";
-import { useContext } from "react";
+import { useRouter } from "next/router";
+import { useContext, useEffect } from "react";
 import LoginButton from "./LoginButton";
 import ProfileIcon from "./ProfileIcon";
 import AuthContext from "../../store/auth-context";
 
 const Header = () => {
+  const router = useRouter();
+  const currentRoute = router.pathname;
   const authContext = useContext(AuthContext);
+  const active = "underline decoration-2 decoration-solid";
 
+  useEffect(() => {
+    if (localStorage.getItem("address") !== null) {
+      authContext.login();
+    }
+  }, []);
   var profileButton = authContext.isLoggedIn ? (
     <ProfileIcon />
   ) : (
@@ -25,11 +34,15 @@ const Header = () => {
           Flowbite
         </span>
       </Navbar.Brand>
-      <div className="order-2 max-w-md">{profileButton}</div>
-      <Navbar.Collapse className="absolute">
-        <Link href="/">Loan</Link>
-        <Link href="/placeholder">Dex</Link>
-      </Navbar.Collapse>
+      <div className="order-2 ">{profileButton}</div>
+      <div className="flex space-x-10">
+        <Link href="/">
+          <a className={currentRoute === "/" ? active : ""}>Loan</a>
+        </Link>
+        <Link href="/placeholder">
+          <a className={currentRoute === "/placeholder" ? active : ""}>Dex</a>
+        </Link>
+      </div>
     </Navbar>
   );
 };

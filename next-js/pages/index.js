@@ -1,7 +1,6 @@
-import AuthContext from "../store/auth-context";
 import { useContext, useEffect } from "react";
-import Layout from "../components/Layout/Layout";
-import styles from "../styles/Home.module.css";
+import AuthContext from "../store/auth-context";
+import AssetCardPanel from "../components/AssetCardPanel";
 
 export default function Home() {
   const authContext = useContext(AuthContext);
@@ -10,11 +9,12 @@ export default function Home() {
     if (accounts.length === 0) {
       authContext.logout();
     } else if (accounts[0] !== authContext.address) {
-      authContext.login(accounts[0]);
+      authContext.switchAccount(accounts[0]);
     }
   };
 
   useEffect(() => {
+    //Listen to MetaMask event
     ethereum.on("accountsChanged", accountsChangedHandler);
     return () => {
       ethereum.removeListener("accountsChanged", accountsChangedHandler);
@@ -22,8 +22,8 @@ export default function Home() {
   }, []);
 
   return (
-    <div className={styles.container}>
-      <Layout>hi</Layout>
-    </div>
+    <>
+      <AssetCardPanel />
+    </>
   );
 }

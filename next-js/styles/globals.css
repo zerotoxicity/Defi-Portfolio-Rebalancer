@@ -18,3 +18,9 @@ a {
 * {
   box-sizing: border-box;
 }
+
+@layer base {
+  body {
+    @apply bg-slate-200;
+  }
+}

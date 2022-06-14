@@ -6,28 +6,41 @@ const AuthContext = React.createContext({
   address: " ",
   login: () => {},
   logout: () => {},
+  switchAccount: () => {},
 });
 
 export const AuthContextProvider = (props) => {
   const [address, setAddress] = useState("");
   const [userLoggedIn, setUserLoggedIn] = useState(!!address);
 
-  const loginHandler = async (account = "") => {
-    if (address === "") {
+  const loginHandler = async () => {
+    //If the user switches account
+    //If user has not logged in
+    if (localStorage.getItem("address") === null) {
       const accounts = await window.ethereum.request({
         method: "eth_requestAccounts",
       });
       setUserLoggedIn(true);
       setAddress(accounts[0]);
-    } else if (account !== address) {
-      setAddress(address);
+      localStorage.setItem("address", accounts[0]);
     }
+    //If localStorage has item
+    else {
+      setUserLoggedIn(true);
+      setAddress(localStorage.getItem("address"));
+    }
+  };
+
+  const switchAccountHandler = async (account) => {
+    localStorage.setItem("address", account);
+    setAddress(account);
   };
 
   const logoutHandler = () => {
     console.log("Logout");
     setAddress("");
-    setUserLoggedIn(!!address);
+    setUserLoggedIn(false);
+    localStorage.removeItem("address");
   };
 
   const contextValue = {
@@ -35,6 +48,7 @@ export const AuthContextProvider = (props) => {
     address: address,
     login: loginHandler,
     logout: logoutHandler,
+    switchAccount: switchAccountHandler,
   };
 
   return (

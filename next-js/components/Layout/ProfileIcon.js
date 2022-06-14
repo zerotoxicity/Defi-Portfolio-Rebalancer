@@ -34,7 +34,7 @@ const ProfileIcon = () => {
           <span>{userAddress}</span>
         </a>
       </Link>
-      <Button onClick={onLogoutHandler}>Log out</Button>
+      {/* <Button onClick={onLogoutHandler}>Log out</Button> */}
     </div>
   );
 };
