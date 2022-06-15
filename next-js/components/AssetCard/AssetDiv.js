@@ -1,10 +1,12 @@
-const AssetDiv = ({ img, imgName }) => {
+import { ICON_STYLE } from "../StringConstant";
+
+const AssetDiv = ({ className, img, text }) => {
   return (
-    <div className="space-x-1 flex items-center">
-      <span>
-        <img src={img} className="w-10 h-10 rounded inline-block" />
+    <div className={className}>
+      <span className="col-span-1">
+        <img src={img} className={`${ICON_STYLE}`} />
       </span>
-      <span className="inline-block ">{imgName}</span>
+      <span className="col-span-2 pl-1 text-left">{text}</span>
     </div>
   );
 };

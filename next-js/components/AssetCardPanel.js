@@ -7,7 +7,7 @@ const AssetCardPanel = () => {
       <EmptyAssetCard />
       <AssetCard
         img="https://upload.wikimedia.org/wikipedia/commons/thumb/3/36/MetaMask_Fox.svg/1024px-MetaMask_Fox.svg.png?20201112074605"
-        imgName="Ethereum"
+        text="Ethereum"
       />
     </>
   );

@@ -2,6 +2,7 @@ import { Navbar } from "flowbite-react";
 import Link from "next/link";
 import { useRouter } from "next/router";
 import { useContext, useEffect } from "react";
+
 import LoginButton from "./LoginButton";
 import ProfileIcon from "./ProfileIcon";
 import AuthContext from "../../store/auth-context";
@@ -17,6 +18,7 @@ const Header = () => {
       authContext.login();
     }
   }, []);
+
   var profileButton = authContext.isLoggedIn ? (
     <ProfileIcon />
   ) : (
@@ -34,7 +36,7 @@ const Header = () => {
           Flowbite
         </span>
       </Navbar.Brand>
-      <div className="order-2 ">{profileButton}</div>
+      {/* TODO GRID */}
       <div className="flex space-x-10">
         <Link href="/">
           <a className={currentRoute === "/" ? active : ""}>Loan</a>
@@ -43,6 +45,8 @@ const Header = () => {
           <a className={currentRoute === "/placeholder" ? active : ""}>Dex</a>
         </Link>
       </div>
+      <div className=" ">{profileButton}</div>
+
     </Navbar>
   );
 };
