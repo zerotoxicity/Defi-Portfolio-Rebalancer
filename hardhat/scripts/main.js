@@ -1,10 +1,12 @@
 const { ethers, getNamedAccounts, network } = require("hardhat");
 const { networkConfig } = require("../helper-hardhat-config");
 const { getWeth, getBalance, approveToken, AMOUNT } = require("./tokenHelper");
-
 const { getLendingPoolContract, getAAVEBalance } = require("./aaveHelper");
-
 const { getCTokenContract } = require("./compoundHelper");
+const {
+  abi,
+  bytecode,
+} = require("../artifacts/contracts/ManageCompEth.sol/ManageCompEth.json");
 
 const wethContractAddress = networkConfig[network.config.chainId].WETHToken;
 const aWethContractAddress = networkConfig[network.config.chainId].aWETHToken;
@@ -13,7 +15,7 @@ const poolProvider = networkConfig[network.config.chainId].aLendingPoolProvider;
 
 async function main() {
   await aave();
-  // await compound();
+  await compound();
 }
 //---------------------------------------------------AAVE------------------------------------------------------------
 async function aave() {
@@ -32,27 +34,34 @@ async function aave() {
   );
 
   //Send WETH to manageAAVE
-  await approveToken(wethContractAddress, deployer, manageAave.address, AMOUNT);
-  await manageAave.supply();
-  await getAAVEBalance(lendingPoolContract, deployer);
-  //Send aWETH to manageAAVE
-  await approveToken(
-    aWethContractAddress,
-    deployer,
-    manageAave.address,
-    AMOUNT
-  );
-  await manageAave.withdraw(deployer, ethers.utils.parseEther("1.0"));
-  await getBalance(wethContract, deployer, "WETH");
+  // await approveToken(wethContractAddress, deployer, manageAave.address, AMOUNT);
+  // await manageAave.supply();
+  // await getAAVEBalance(lendingPoolContract, deployer);
+  // //Send aWETH to manageAAVE
+  // await approveToken(
+  //   aWethContractAddress,
+  //   deployer,
+  //   manageAave.address,
+  //   AMOUNT
+  // );
+  // await manageAave.withdraw(deployer, ethers.utils.parseEther("1.0"));
+  // await getBalance(wethContract, deployer, "WETH");
+  await manageAave.getAPR();
 }
 
 //---------------------------------------------------COMPOUND------------------------------------------------------------
 async function compound() {
   const { deployer } = await getNamedAccounts();
-  const wethContract = await getWeth();
+  // const wethContract = await getWeth();
+
+  // const manageCompEthFactory = await ethers.getContractFactory(
+  //   "ManageCompEth",
+  //   deployer
+  // );
 
   const manageCompEthFactory = await ethers.getContractFactory(
-    "ManageCompEth",
+    abi,
+    bytecode,
     deployer
   );
   const manageCompEth = await manageCompEthFactory.deploy(
@@ -61,23 +70,27 @@ async function compound() {
   );
   const cethContract = await getCTokenContract(cethContractAddress);
 
-  await approveToken(
-    wethContractAddress,
-    deployer,
-    manageCompEth.address,
-    AMOUNT
-  );
-  await manageCompEth.supply();
-  const value = await getCompBalance(cethContract, deployer, "cETH");
-  await approveToken(
-    cethContractAddress,
-    deployer,
-    manageCompEth.address,
-    value
-  );
-  await manageCompEth.withdraw(0);
-  await getCompBalance(cethContract, deployer, "cETH");
-  await getBalance(wethContract, deployer, "wETH");
+  // await approveToken(
+  //   wethContractAddress,
+  //   deployer,
+  //   manageCompEth.address,
+  //   AMOUNT
+  // );
+  // await manageCompEth.supply();
+  // const value = await getCompBalance(cethContract, deployer, "cETH");
+  // await approveToken(
+  //   cethContractAddress,
+  //   deployer,
+  //   manageCompEth.address,
+  //   value
+  // );
+  // await manageCompEth.withdraw(0);
+  // await getCompBalance(cethContract, deployer, "cETH");
+  // await getBalance(wethContract, deployer, "wETH");
+  // const supplyRate = await cethContract.supplyRatePerBlock();
+  // const apy = (Math.pow((supplyRate / 1e18) * 6495 + 1, 365) - 1) * 100;
+  // console.log("Apy: %d", apy);
+  await manageCompEth.getAPR();
 }
 //------------------------------------------------------------------------------------------------------------------------
 

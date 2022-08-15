@@ -30,4 +30,6 @@ interface ICETH {
      * @return uint 0=success, otherwise a failure (see ErrorReporter.sol for details)
      */
     function redeemUnderlying(uint redeemAmount) external returns (uint);
+
+    function supplyRatePerBlock() external returns (uint);
 }

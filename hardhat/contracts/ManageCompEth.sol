@@ -5,22 +5,38 @@ import "./interfaces/IWETH.sol";
 import "./interfaces/ICETH.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
+import "@openzeppelin/contracts/access/Ownable.sol";
 
 import "hardhat/console.sol";
 
-contract ManageCompEth {
+//Mantissa = 10^18
+contract ManageCompEth is Ownable {
     using SafeERC20 for IERC20;
 
     //cToken
     address private _token;
     //Underlying asset
     address private _asset;
+    uint256 private _blocksPerDay;
 
     constructor(address token, address asset) {
         _token = token;
         _asset = asset;
+        _blocksPerDay = 6495; //Number of blocks/day on 11/7/22
     }
 
+    function setBlocksPerDay(uint256 amount) public onlyOwner {
+        _blocksPerDay = amount;
+    }
+
+    function getAPR() external returns (uint256) {
+        console.log((ICETH(_token).supplyRatePerBlock() * _blocksPerDay) * 365);
+        return (ICETH(_token).supplyRatePerBlock() * _blocksPerDay) * 365;
+    }
+
+    /**
+Convert WETH to ETH then deposit
+ */
     function supply() external {
         address asset = _asset;
         uint256 balance = IWETH(asset).allowance(msg.sender, address(this));

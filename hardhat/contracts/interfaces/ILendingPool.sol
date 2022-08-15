@@ -2,8 +2,7 @@ pragma solidity 0.8.10;
 pragma experimental ABIEncoderV2;
 
 import {ILendingPoolAddressesProvider} from "./ILendingPoolAddressesProvider.sol";
-
-// import {DataTypes} from "@aave/protocol-v2/contracts/protocol/libraries/types/DataTypes.sol";
+import {DataTypes} from "@aave/protocol-v2/contracts/protocol/libraries/types/DataTypes.sol";
 
 interface ILendingPool {
     /**
@@ -407,15 +406,15 @@ interface ILendingPool {
         view
         returns (uint256);
 
-    // /**
-    //  * @dev Returns the state and configuration of the reserve
-    //  * @param asset The address of the underlying asset of the reserve
-    //  * @return The state of the reserve
-    //  **/
-    // function getReserveData(address asset)
-    //     external
-    //     view
-    //     returns (DataTypes.ReserveData memory);
+    /**
+     * @dev Returns the state and configuration of the reserve
+     * @param asset The address of the underlying asset of the reserve
+     * @return The state of the reserve
+     **/
+    function getReserveData(address asset)
+        external
+        view
+        returns (DataTypes.ReserveData memory);
 
     function finalizeTransfer(
         address asset,

@@ -6,9 +6,11 @@ import "./interfaces/ILendingPoolAddressesProvider.sol";
 import "./interfaces/ILendingPool.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
+import {DataTypes} from "@aave/protocol-v2/contracts/protocol/libraries/types/DataTypes.sol";
 
 import "hardhat/console.sol";
 
+//Mantissa = 10^18
 contract ManageAave {
     using SafeERC20 for IERC20;
 
@@ -28,6 +30,14 @@ contract ManageAave {
             _poolProvider.getLendingPool(),
             type(uint256).max
         );
+    }
+
+    function getAPR() external view returns (uint256) {
+        ILendingPool pool = ILendingPool(_poolProvider.getLendingPool());
+        DataTypes.ReserveData memory reserveData = pool.getReserveData(_asset);
+        console.log(reserveData.currentLiquidityRate / (10**9));
+        //Reserve data mantissa = 10^27
+        return uint256(reserveData.currentLiquidityRate) / (10**9);
     }
 
     //Send token to the contract before calling supply()
