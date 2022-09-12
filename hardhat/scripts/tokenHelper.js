@@ -13,7 +13,7 @@ async function getWeth() {
     deployer
   );
   const txResponse = await iWeth.deposit({
-    value: AMOUNT,
+    value: ethers.utils.parseEther("100"),
   });
   await txResponse.wait(1);
   return iWeth;
@@ -29,12 +29,11 @@ async function approveToken(erc20Addr, signer, spender, amount) {
 
 //Get balance of the ERC20 token
 //currently hardcoded WETH
-async function getBalance(erc20Contract, address, symbol) {
-  const balance = await erc20Contract.balanceOf(address);
-  console.log("💰 " + address + " -");
-  console.log(
-    ` ${symbol} balance: ${ethers.utils.formatEther(balance).toString()} `
-  );
+async function getBalance(erc20Contract, account, symbol) {
+  const balance = await erc20Contract.balanceOf(account);
+  console.log("💰 " + account + " -");
+  console.log(` ${symbol} balance: ${balance} `);
+  // ${ethers.utils.formatEther(balance).toString()
   console.log("-----\n");
   return balance;
 }

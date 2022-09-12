@@ -25,7 +25,7 @@ async function getAAVEBalance(lendingPoolContract, address) {
     address
   );
   console.log("💰 AAVE " + address + " - ");
-  console.log(symbol + " balance: " + totalCollateralETH);
+  console.log(" balance: " + totalCollateralETH);
 
   console.log("-----\n");
   return totalCollateralETH;

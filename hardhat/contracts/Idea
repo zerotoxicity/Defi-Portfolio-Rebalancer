@@ -1,0 +1,16 @@
+# Individual protocol
+
+## Example: Aave
+
+- User wanna use AAVE
+
+1. User send WETH to ManageAave contract
+2. Rebalancer supply to AAVE and receive aTokens
+3. Rebalancer mints Rebalancer-Aave Tokens and send to User
+
+- User wanna withdraw
+
+1. User sends Rebalancer-Aave Tokens to ManageAave
+2. ManageAave check for exchange rate (ER)
+3. ManageAave redeems ER amount of aToken from Aave and receive WETH
+4. ManageAave burns Rebalancer-Aave Tokens and send WETH to the user
