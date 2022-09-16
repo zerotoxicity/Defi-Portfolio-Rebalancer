@@ -1,74 +1,75 @@
-// //SPDX-License-Identifier: UNLICENSED
-// pragma solidity 0.8.10;
+//SPDX-License-Identifier: UNLICENSED
+pragma solidity 0.8.10;
 
-// import "../interfaces/IWETH.sol";
-// import "../interfaces/ICETH.sol";
-// import "../ALendingProtocol.sol";
-// import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
-// import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
-// import "@openzeppelin/contracts/access/Ownable.sol";
+import "../interfaces/ICToken.sol";
+import "../ALendingProtocol.sol";
+import "@openzeppelin/contracts/access/Ownable.sol";
 
-// import "hardhat/console.sol";
+import "hardhat/console.sol";
 
-// //Mantissa = 10^18
-// contract ManageCompWETH is Ownable, ALendingProtocol {
-//     using SafeERC20 for IERC20;
+//Mantissa = 10^18
+contract ManageCompERC20 is ALendingProtocol, Ownable {
+    //cToken
+    address internal _pToken;
+    //Underlying asset
+    uint256 private _blocksPerDay;
 
-//     //cToken
-//     address private _token;
-//     //Underlying asset
-//     address private _asset;
-//     uint256 private _blocksPerDay;
+    constructor(
+        address pToken,
+        address rebalancerToken,
+        address asset
+    ) ALendingProtocol(rebalancerToken, asset) {
+        _pToken = pToken;
+        _blocksPerDay = 6495; //Number of blocks/day on 11/7/22
+        IERC20(_asset).approve(_pToken, type(uint256).max);
+    }
 
-//     constructor(address token, address asset) {
-//         _token = token;
-//         _asset = asset;
-//         _blocksPerDay = 6495; //Number of blocks/day on 11/7/22
-//     }
+    function setBlocksPerDay(uint256 amount) public onlyOwner {
+        _blocksPerDay = amount;
+    }
 
-//     function setBlocksPerDay(uint256 amount) public onlyOwner {
-//         _blocksPerDay = amount;
-//     }
+    function getPToken() external view virtual override returns (address) {
+        return _pToken;
+    }
 
-//     function getAPR() external virtual override returns (uint256) {
-//         console.log((ICETH(_token).supplyRatePerBlock() * _blocksPerDay) * 365);
-//         return (ICETH(_token).supplyRatePerBlock() * _blocksPerDay) * 365;
-//     }
+    function getAPR() external virtual override returns (uint256) {
+        return (ICToken(_pToken).supplyRatePerBlock() * _blocksPerDay) * 365;
+    }
 
-//     /**
-// Convert WETH to ETH then deposit
-//  */
-//     function supply() external virtual override {
-//         address asset = _asset;
-//         uint256 balance = IWETH(asset).allowance(msg.sender, address(this));
-//         require(balance != 0, "Approve contract");
-//         IERC20(asset).transferFrom(msg.sender, address(this), balance);
-//         IWETH(asset).withdraw(balance);
-//         ICETH(_token).mint{value: balance}();
-//         IERC20 token = IERC20(_token);
-//         uint256 cBalance = token.balanceOf(address(this));
-//         token.safeTransfer(msg.sender, cBalance);
-//     }
+    function getConversionRate()
+        public
+        view
+        virtual
+        override
+        returns (uint256)
+    {
+        return ICToken(_pToken).exchangeRateStored();
+    }
 
-//     //Convert CETH -> ETH -> WETH
-//     function withdraw(uint256 value)
-//         external
-//         virtual
-//         override
-//         returns (uint256 amount)
-//     {
-//         address token = _token;
-//         IERC20 assetContract = IERC20(_asset);
-//         uint256 balance = IERC20(token).allowance(msg.sender, address(this));
-//         require(balance != 0, "Approve contract");
-//         amount = (value != 0) ? value : balance;
-//         IERC20(_token).safeTransferFrom(msg.sender, address(this), amount);
-//         require(ICETH(token).redeem(amount) == 0, "Withdrawal failed");
-//         IWETH(_asset).deposit{value: address(this).balance}();
-//         amount = assetContract.balanceOf(address(this));
-//         assetContract.safeTransfer(msg.sender, amount);
-//     }
+    /**
+Convert WETH to ETH then deposit
+ */
+    function supply() external virtual override {
+        uint256 amount = mintAssetAllowance(msg.sender);
+        require(ICToken(_pToken).mint(amount) == 0, "Error minting COMP");
+        ICToken(_pToken).transfer(
+            _rebalancerToken,
+            IERC20(_pToken).balanceOf(address(this))
+        );
+    }
 
-//     //Receive eth
-//     receive() external payable {}
-// }
+    //Convert CETH -> ETH -> WETH
+    function withdraw()
+        external
+        virtual
+        override
+        returns (uint256 expectedValue)
+    {
+        uint256 amtOfPTokens = withdrawRebalancerAllowance();
+        require(
+            ICToken(_pToken).redeem(amtOfPTokens) == 0,
+            "Error redeeming COMP"
+        );
+        expectedValue = amtOfPTokens * getConversionRate();
+    }
+}

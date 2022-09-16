@@ -13,7 +13,7 @@ async function getWeth() {
     deployer
   );
   const txResponse = await iWeth.deposit({
-    value: ethers.utils.parseEther("100"),
+    value: ethers.utils.parseEther("2"),
   });
   await txResponse.wait(1);
   return iWeth;
@@ -33,7 +33,10 @@ async function getBalance(erc20Contract, account, symbol) {
   const balance = await erc20Contract.balanceOf(account);
   console.log("💰 " + account + " -");
   console.log(` ${symbol} balance: ${balance} `);
-  // ${ethers.utils.formatEther(balance).toString()
+  console.log(
+    ` ${symbol} balance: ${ethers.utils.formatEther(balance).toString()} `
+  );
+
   console.log("-----\n");
   return balance;
 }

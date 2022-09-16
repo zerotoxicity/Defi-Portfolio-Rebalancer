@@ -1,5 +1,4 @@
 pragma solidity 0.8.10;
-import "../EnumDeclaration.sol";
 
 //For individual protocols
 interface IRebalancerToken {
@@ -11,21 +10,9 @@ interface IRebalancerToken {
 
     function setUnderlying(address underlying) external;
 
-    function getMinter(address account) external view returns (bool);
+    function mintRebalancerToken(address account, uint256 amount) external;
 
-    function addMinter(address account) external;
-
-    function removeMinter(address account) external;
-
-    function mintRebalancerToken(
-        address account,
-        uint256 amount,
-        address poolContract
-    ) external returns (uint256 mintAmount);
-
-    function withdrawRebalancerToken(
-        uint256 amount,
-        address acount,
-        address poolContract
-    ) external returns (uint[2] memory);
+    function withdrawRebalancerToken(uint256 amount, address acount)
+        external
+        returns (uint256);
 }

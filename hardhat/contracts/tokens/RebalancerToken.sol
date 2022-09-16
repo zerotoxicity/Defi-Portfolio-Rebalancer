@@ -3,7 +3,7 @@ pragma solidity 0.8.10;
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "../interfaces/ICToken.sol";
-import "../EnumDeclaration.sol";
+import "../ALendingProtocol.sol";
 
 import "hardhat/console.sol";
 
@@ -13,25 +13,15 @@ contract RebalancerToken is ERC20, Ownable {
     address private _pToken;
     //Underlying asset e.g., WETH
     address private _underlying;
-    Protocols private _protocol;
-    mapping(address => bool) private minter;
 
     constructor(
         string memory name,
         string memory symbol,
         address pToken,
-        address underlying,
-        uint8 protocolIndex
+        address underlying
     ) ERC20(name, symbol) {
         _pToken = pToken;
         _underlying = underlying;
-        _protocol = Protocols(protocolIndex);
-        minter[msg.sender] = true;
-    }
-
-    modifier onlyMinter() {
-        require(minter[msg.sender] == true, "Not minter");
-        _;
     }
 
     function getpToken() public view returns (address) {
@@ -50,76 +40,33 @@ contract RebalancerToken is ERC20, Ownable {
         _underlying = underlying;
     }
 
-    function getProtocol() public view returns (Protocols) {
-        return _protocol;
+    //Conversion rate of Rebalancer Token to the amount of _pToken held by this
+    function rToPtokenConversionRate() public view returns (uint256) {
+        uint256 pTokenAmount = IERC20(_pToken).balanceOf(address(this));
+        return (pTokenAmount * 1e18) / totalSupply();
     }
 
-    function setProtocol(Protocols protocol) public onlyOwner {
-        _protocol = protocol;
-    }
-
-    function getMinter(address account) public view returns (bool) {
-        return minter[account];
-    }
-
-    function addMinter(address account) public onlyOwner {
-        minter[account] = true;
-    }
-
-    function removeMinter(address account) public onlyOwner {
-        minter[account] = false;
-    }
-
-    //Conversion rate of Rebalancer Token to the amount of _pToken held by the pool smart contract, e.g., 5 Rebalancer-aWETH Token == 5 aWeth
-    /// @param account refers to the pool smart contract
-    function rToPtokenConversionRate(address account)
-        public
-        view
-        returns (uint256)
-    {
-        uint256 pTokenAmount = IERC20(_pToken).balanceOf(account);
-        return (pTokenAmount * 10**18) / totalSupply();
-    }
-
-    function _getConversionRate()
-        private
-        view
-        returns (uint256 conversionRate)
-    {
-        if (_protocol == Protocols.AAVE) {
-            conversionRate = 1; //Conversion rate in Aave = 1:1
-        } else if (_protocol == Protocols.COMPOUND) {
-            conversionRate = ICToken(_pToken).exchangeRateStored();
-        }
+    function _getConversionRate() private view returns (uint256) {
+        return ALendingProtocol(owner()).getConversionRate();
     }
 
     /// Get Rebalancer Token price in underlying asset. e.g., 5 Rebalancer token == 5 WETH
-    function getRebalancerPrice(address manageProtocol)
-        public
-        view
-        virtual
-        returns (uint256 price)
-    {
+    function getRebalancerPrice() public view virtual returns (uint256 price) {
         uint256 conversionRate = _getConversionRate();
 
-        price =
-            (rToPtokenConversionRate(manageProtocol) * conversionRate) /
-            10**18; //Price in underlying asset
+        price = (rToPtokenConversionRate() * conversionRate); //Price in underlying asset
     }
 
     //Mint Rebalancer Tokens based on its price
     /// @param account the end user aka tx.origin
-    /// @return mintAmount number of RebalancerToken minted
-    function mintRebalancerToken(
-        address account,
-        uint256 amount,
-        address manageProtocol
-    ) external onlyMinter returns (uint256 mintAmount) {
+    function mintRebalancerToken(address account, uint256 amount)
+        external
+        onlyOwner
+    {
+        uint256 mintAmount;
         if (totalSupply() != 0) {
             //msg.sender will be the pool contract
-            mintAmount =
-                (amount * (10**18)) /
-                getRebalancerPrice(manageProtocol);
+            mintAmount = (amount * (1e18)) / getRebalancerPrice();
         } else if (totalSupply() == 0) {
             mintAmount = amount;
         }
@@ -128,18 +75,19 @@ contract RebalancerToken is ERC20, Ownable {
 
     /// Withdrawing of Rebalancer Token
     /// Redemption of pToken will be done in another contract
-    function withdrawRebalancerToken(
-        uint256 amount,
-        address account,
-        address manageProtocol
-    ) external virtual onlyMinter returns (uint[2] memory) {
+    function withdrawRebalancerToken(uint256 amount, address account)
+        external
+        virtual
+        onlyOwner
+        returns (uint256)
+    {
         require(totalSupply() > 0, "No token to withdraw");
         //Convert rebalancerToken to protocol Tokens
-        uint256 amtOfPTokens = (amount *
-            rToPtokenConversionRate(manageProtocol)) / 10**18;
-        console.log(amtOfPTokens);
+        uint256 amtOfPTokens = (amount * rToPtokenConversionRate()) / 1e18;
         require(amtOfPTokens > 0, "Amt of pTokens ==0");
         _burn(account, amount);
-        return ([amtOfPTokens, amtOfPTokens * _getConversionRate()]);
+
+        IERC20(_pToken).transfer(owner(), amtOfPTokens);
+        return amtOfPTokens;
     }
 }

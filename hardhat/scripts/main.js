@@ -23,38 +23,17 @@ async function main() {
     "RAaveWETH",
     "RAWE",
     aWethContractAddress,
-    wethContractAddress,
-    0
+    wethContractAddress
   );
 
   console.log("📝 Rebalancer Token contract deployed!");
 
-  const rebalancerWethMainFactory = await ethers.getContractFactory(
-    "RebWethMain",
-    deployer
-  );
-  const rebalancerWethMainContract = await rebalancerWethMainFactory.deploy(
-    wethContractAddress,
-    rebalancerTokenContract.address
-  );
-
-  console.log("📝 Rebalancer WETH main contract deployed!");
-
-  await aave(
-    rebalancerTokenContract,
-    rebalancerWethMainContract,
-    wethContract,
-    deployer
-  );
+  await aave(rebalancerTokenContract, wethContract, deployer);
   // await compound();
 }
 //---------------------------------------------------AAVE------------------------------------------------------------
-async function aave(
-  rebalancerTokenContract,
-  rebalancerWethMainContract,
-  wethContract,
-  deployer
-) {
+async function aave(rebalancerTokenContract, wethContract, deployer) {
+  const accounts = await ethers.getSigners();
   const lendingPoolContract = await getLendingPoolContract(deployer);
 
   const manageAaveFactory = await ethers.getContractFactory(
@@ -63,37 +42,53 @@ async function aave(
   );
   const manageAave = await manageAaveFactory.deploy(
     aWethContractAddress,
-    poolProvider,
-    rebalancerTokenContract.address
+    rebalancerTokenContract.address,
+    poolProvider
   );
   console.log("📝 Manage Aave contract deployed!");
-  await rebalancerTokenContract.addMinter(rebalancerWethMainContract.address);
+  await rebalancerTokenContract.transferOwnership(manageAave.address);
 
   // //Send WETH to manageAAVE
-  await approveToken(
-    wethContractAddress,
-    deployer,
-    rebalancerWethMainContract.address,
-    AMOUNT
-  );
-  await rebalancerWethMainContract.deposit(manageAave.address);
+  await approveToken(wethContractAddress, deployer, manageAave.address, AMOUNT);
+  await manageAave.supply();
   console.log("✅ Supplied!");
-  await getAAVEBalance(lendingPoolContract, manageAave.address);
+  await getAAVEBalance(lendingPoolContract, rebalancerTokenContract.address);
   await getBalance(rebalancerTokenContract, deployer, "RAWE");
 
   await approveToken(
     rebalancerTokenContract.address,
     deployer,
-    rebalancerWethMainContract.address,
+    manageAave.address,
     AMOUNT
   );
+
   await new Promise((r) => setTimeout(r, 5000));
-  await getAAVEBalance(lendingPoolContract, manageAave.address);
+
+  //Supplying with another account;
+  await wethContract.transfer(
+    accounts[1].address,
+    ethers.utils.parseEther("1")
+  );
+  console.log("Depositing from another account..");
+
+  await approveToken(
+    wethContractAddress,
+    accounts[1],
+    manageAave.address,
+    AMOUNT
+  );
+
+  await manageAave.connect(accounts[1]).supply();
+  console.log("✅ Supplied!");
+  await getAAVEBalance(lendingPoolContract, rebalancerTokenContract.address);
+  await getBalance(rebalancerTokenContract, accounts[1].address, "RAWE");
+
+  await getAAVEBalance(lendingPoolContract, rebalancerTokenContract.address);
 
   console.log("Withdrawing..");
-  await rebalancerWethMainContract.redeem(manageAave.address);
+  await manageAave.withdraw();
   console.log("✅ Withdrawal complete!");
-  await getAAVEBalance(lendingPoolContract, manageAave.address);
+  await getAAVEBalance(lendingPoolContract, rebalancerTokenContract.address);
   await getBalance(rebalancerTokenContract, deployer, "RAWE");
   await getBalance(wethContract, deployer, "WETH");
 }
