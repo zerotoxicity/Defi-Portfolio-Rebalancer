@@ -10,9 +10,9 @@ interface IRebalancerToken {
 
     function setUnderlying(address underlying) external;
 
-    function mintRebalancerToken(address account, uint256 amount) external;
+    function mintRTokens(address account, uint256 amount) external;
 
-    function withdrawRebalancerToken(uint256 amount, address acount)
+    function withdrawRTokens(address acount, uint256 amount)
         external
         returns (uint256);
 }

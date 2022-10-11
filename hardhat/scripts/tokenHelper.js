@@ -6,11 +6,11 @@ const AMOUNT = ethers.utils.parseEther("1");
 
 //Receive WETH
 async function getWeth() {
-  const { deployer } = await getNamedAccounts();
+  accounts = await ethers.getSigners();
   const iWeth = await ethers.getContractAt(
     "IWETH",
     networkConfig[network.config.chainId].WETHToken,
-    deployer
+    accounts[0]
   );
   const txResponse = await iWeth.deposit({
     value: ethers.utils.parseEther("2"),

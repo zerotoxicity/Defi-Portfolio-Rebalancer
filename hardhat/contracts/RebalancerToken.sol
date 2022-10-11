@@ -1,9 +1,10 @@
 pragma solidity 0.8.10;
 
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
+import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
-import "../interfaces/ICToken.sol";
-import "../ALendingProtocol.sol";
+import "./interfaces/ICToken.sol";
+import "./ALendingProtocol.sol";
 
 import "hardhat/console.sol";
 
@@ -59,10 +60,7 @@ contract RebalancerToken is ERC20, Ownable {
 
     //Mint Rebalancer Tokens based on its price
     /// @param account the end user aka tx.origin
-    function mintRebalancerToken(address account, uint256 amount)
-        external
-        onlyOwner
-    {
+    function mintRTokens(address account, uint256 amount) external onlyOwner {
         uint256 mintAmount;
         if (totalSupply() != 0) {
             //msg.sender will be the pool contract
@@ -75,19 +73,20 @@ contract RebalancerToken is ERC20, Ownable {
 
     /// Withdrawing of Rebalancer Token
     /// Redemption of pToken will be done in another contract
-    function withdrawRebalancerToken(uint256 amount, address account)
+    function withdrawRTokens(address account, uint256 amount)
         external
         virtual
         onlyOwner
         returns (uint256)
     {
-        require(totalSupply() > 0, "No token to withdraw");
+        require(totalSupply() > 0 && amount > 0, "No token to withdraw");
         //Convert rebalancerToken to protocol Tokens
         uint256 amtOfPTokens = (amount * rToPtokenConversionRate()) / 1e18;
-        require(amtOfPTokens > 0, "Amt of pTokens ==0");
         _burn(account, amount);
-
-        IERC20(_pToken).transfer(owner(), amtOfPTokens);
+        require(
+            IERC20(_pToken).transfer(owner(), amtOfPTokens),
+            "Transfer failed"
+        );
         return amtOfPTokens;
     }
 }

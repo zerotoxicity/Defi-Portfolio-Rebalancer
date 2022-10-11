@@ -1,5 +1,6 @@
-require("@nomiclabs/hardhat-waffle");
 require("dotenv").config();
+require("@nomicfoundation/hardhat-toolbox");
+require("@nomicfoundation/hardhat-chai-matchers");
 require("hardhat-deploy");
 
 const MAINNET_RPC_URL = process.env.MAINNET_RPC_URL;
@@ -9,6 +10,13 @@ module.exports = {
     compilers: [
       {
         version: "0.8.10",
+        settings: {
+          outputSelection: {
+            "*": {
+              "*": ["storageLayout"],
+            },
+          },
+        },
       },
       {
         version: "0.6.12",
@@ -19,12 +27,12 @@ module.exports = {
   networks: {
     hardhat: {
       chainId: 31337,
-      forking: {
-        url: MAINNET_RPC_URL,
-      },
     },
     localhost: {
       chainId: 31337,
+      forking: {
+        url: MAINNET_RPC_URL,
+      },
     },
   },
   namedAccounts: {
