@@ -21,7 +21,6 @@ contract ManageAave is ALendingProtocol {
             IAToken(pToken).UNDERLYING_ASSET_ADDRESS()
         )
     {
-        _pToken = pToken;
         _poolProvider = ILendingPoolAddressesProvider(poolAddrProvider);
         IERC20(_asset).approve(
             _poolProvider.getLendingPool(),
@@ -39,29 +38,27 @@ contract ManageAave is ALendingProtocol {
         pool.deposit(_asset, amount, _rebalancerToken, 0);
     }
 
-    function _withdrawProtocol(address account, uint256 amount)
-        internal
-        override
-    {
+    function _withdrawProtocol(
+        address account,
+        uint256 amount
+    ) internal override {
         ILendingPool pool = ILendingPool(_poolProvider.getLendingPool());
         pool.withdraw(_asset, amount, account);
     }
 
-    function supply(address account, uint256 amount)
-        external
-        override
-        moreThanZero(amount)
-    {
+    function supply(
+        address account,
+        uint256 amount
+    ) external override moreThanZero(amount) {
         mintRebalancerTokens(account, amount);
         _supplyProtocol(amount);
     }
 
-    function withdraw(address account, uint256 amount)
-        external
-        override
-        moreThanZero(amount)
-    {
-        uint256 amtOfPTokens = withdrawRebalancerTokens(account, amount);
+    function withdraw(
+        address account,
+        uint256 amount
+    ) external override moreThanZero(amount) {
+        uint256 amtOfPTokens = withdrawRebalancerTokens(amount);
         _withdrawProtocol(account, amtOfPTokens);
     }
 

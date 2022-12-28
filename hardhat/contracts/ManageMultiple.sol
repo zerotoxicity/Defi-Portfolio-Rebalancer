@@ -1,9 +1,12 @@
 pragma solidity 0.8.10;
 
 import "./ALendingProtocol.sol";
+import "./interfaces/ILendingProtocolCore.sol";
 import "@openzeppelin/contracts/interfaces/IERC20.sol";
 
-contract ManageMultiple {
+import "hardhat/console.sol";
+
+contract ManageMultiple is ILendingProtocolCore {
     address[] private _manageProtocols;
     address private _currentBest;
     address private _asset;
@@ -19,30 +22,44 @@ contract ManageMultiple {
         _rebalancerToken = ALendingProtocol(manageProtocols[0])
             .getRebalancerTokenAddress();
         _asset = ALendingProtocol(manageProtocols[0]).getAsset();
+
+        uint256 currentBestAPR;
+        uint256 index;
+
         for (uint i = 0; i < manageProtocols.length; i++) {
-            IERC20(_asset).approve(manageProtocols[i], type(uint256).max);
+            IERC20(_asset).approve(manageProtocols[0], type(uint256).max);
+            IERC20(_rebalancerToken).approve(
+                manageProtocols[0],
+                type(uint256).max
+            );
+
+            uint256 currAPR = ALendingProtocol(manageProtocols[i]).getAPR();
+            if (currAPR > currentBestAPR) {
+                currentBestAPR = currAPR;
+                index = i;
+            }
         }
+
+        _currentBest = manageProtocols[index];
     }
 
-    function getAPR() external view returns (uint256) {
-        return ALendingProtocol(_currentBest).getAPR();
+    function supply(address account, uint256 amount) external rebalanceCheck {
+        require(IERC20(_asset).allowance(msg.sender, address(this)) >= amount);
+
+        ALendingProtocol(_currentBest).supply(account, amount);
     }
 
-    function supply() external rebalanceCheck {
-        uint256 amount = IERC20(_asset).allowance(msg.sender, address(this));
-        ALendingProtocol(_currentBest).supply(msg.sender, amount);
-    }
-
-    function withdraw() external rebalanceCheck {
-        uint256 amount = IERC20(_rebalancerToken).allowance(
-            msg.sender,
-            address(this)
+    function withdraw(address account, uint256 amount) external rebalanceCheck {
+        require(
+            IERC20(_rebalancerToken).allowance(msg.sender, address(this)) >=
+                amount
         );
-        ALendingProtocol(_currentBest).withdraw(msg.sender, amount);
+
+        ALendingProtocol(_currentBest).withdraw(account, amount);
     }
 
     function rebalance() public {
-        address nextBest;
+        address nextBest = _currentBest;
         uint256 currentBestAPR = ALendingProtocol(_currentBest).getAPR();
         for (uint i = 0; i < _manageProtocols.length; i++) {
             uint256 currentIterationAPR = ALendingProtocol(_manageProtocols[i])
@@ -57,5 +74,17 @@ contract ManageMultiple {
             ALendingProtocol(nextBest).rebalancingSupply();
             _currentBest = nextBest;
         }
+    }
+
+    function getAPR() external view returns (uint256) {
+        return ALendingProtocol(_currentBest).getAPR();
+    }
+
+    function getCurrentBest() external view returns (address) {
+        return _currentBest;
+    }
+
+    function getConversionRate() external view returns (uint256) {
+        return ALendingProtocol(_currentBest).getConversionRate();
     }
 }

@@ -18,6 +18,28 @@ contract ManageCompWETH is ManageComp {
     //Receive eth
     receive() external payable {}
 
+    function _supplyProtocol(uint256 amount) internal override {
+        IWETH(_asset).withdraw(amount);
+        ICETH(_pToken).mint{value: amount}();
+        require(
+            ICETH(_pToken).transfer(
+                _rebalancerToken,
+                ICETH(_pToken).balanceOf(address(this))
+            ),
+            "Transfer failed"
+        );
+    }
+
+    function _withdrawProtocol(address account, uint256 amount)
+        internal
+        override
+    {
+        require(ICETH(_pToken).redeem(amount) == 0, "Withdrawal failed");
+        uint256 expectedValue = address(this).balance;
+        IWETH(_asset).deposit{value: expectedValue}();
+        IWETH(_asset).transfer(account, expectedValue);
+    }
+
     // Convert WETH to ETH then deposit
     function supply(address account, uint256 amount)
         external
@@ -25,12 +47,7 @@ contract ManageCompWETH is ManageComp {
         moreThanZero(amount)
     {
         mintRebalancerTokens(account, amount);
-        IWETH(_asset).withdraw(amount);
-        ICETH(_pToken).mint{value: amount}();
-        IERC20(_pToken).transfer(
-            _rebalancerToken,
-            IERC20(_pToken).balanceOf(address(this))
-        );
+        _supplyProtocol(amount);
     }
 
     //Convert CETH -> ETH -> WETH
@@ -39,10 +56,7 @@ contract ManageCompWETH is ManageComp {
         override
         moreThanZero(amount)
     {
-        uint256 amtOfPTokens = withdrawRebalancerTokens(account, amount);
-        require(ICETH(_pToken).redeem(amtOfPTokens) == 0, "Withdrawal failed");
-        uint256 expectedValue = address(this).balance;
-        IWETH(_asset).deposit{value: expectedValue}();
-        IWETH(_asset).transfer(account, expectedValue);
+        uint256 amtOfPTokens = withdrawRebalancerTokens(amount);
+        _withdrawProtocol(account, amtOfPTokens);
     }
 }

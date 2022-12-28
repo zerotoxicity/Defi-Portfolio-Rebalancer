@@ -1,7 +1,10 @@
 const { ethers, getNamedAccounts, network } = require("hardhat");
 const { networkConfig } = require("../helper-hardhat-config");
 const { getWeth, getBalance, approveToken, AMOUNT } = require("./tokenHelper");
-const { getLendingPoolContract, getAAVEBalance } = require("./aaveHelper");
+const {
+  getLendingPoolContract,
+  getAAVEBalance,
+} = require("../test/helpers/aaveHelper");
 const { getCTokenContract } = require("./compoundHelper");
 
 const wethContractAddress = networkConfig[network.config.chainId].WETHToken;

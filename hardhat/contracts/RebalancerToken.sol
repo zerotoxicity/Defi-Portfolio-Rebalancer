@@ -3,6 +3,7 @@ pragma solidity 0.8.10;
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
+import "./interfaces/ILendingProtocolCore.sol";
 import "./interfaces/ICToken.sol";
 import "./ALendingProtocol.sol";
 
@@ -14,6 +15,7 @@ contract RebalancerToken is ERC20, Ownable {
     address private _pToken;
     //Underlying asset e.g., WETH
     address private _underlying;
+    address private _deployer;
 
     constructor(
         string memory name,
@@ -23,6 +25,7 @@ contract RebalancerToken is ERC20, Ownable {
     ) ERC20(name, symbol) {
         _pToken = pToken;
         _underlying = underlying;
+        _deployer = msg.sender;
     }
 
     function getpToken() public view returns (address) {
@@ -44,11 +47,13 @@ contract RebalancerToken is ERC20, Ownable {
     //Conversion rate of Rebalancer Token to the amount of _pToken held by this
     function rToPtokenConversionRate() public view returns (uint256) {
         uint256 pTokenAmount = IERC20(_pToken).balanceOf(address(this));
+        if (pTokenAmount == 0 || totalSupply() == 0) return 0;
         return (pTokenAmount * 1e18) / totalSupply();
     }
 
     function _getConversionRate() private view returns (uint256) {
-        return ALendingProtocol(owner()).getConversionRate();
+        require(owner() != _deployer, "Transfer ownership");
+        return ILendingProtocolCore(owner()).getConversionRate();
     }
 
     /// Get Rebalancer Token price in underlying asset. e.g., 5 Rebalancer token == 5 WETH
@@ -61,6 +66,7 @@ contract RebalancerToken is ERC20, Ownable {
     //Mint Rebalancer Tokens based on its price
     /// @param account the end user aka tx.origin
     function mintRTokens(address account, uint256 amount) external onlyOwner {
+        require(amount > 0, "Invalid amount");
         uint256 mintAmount;
         if (totalSupply() != 0) {
             //msg.sender will be the pool contract
@@ -73,15 +79,19 @@ contract RebalancerToken is ERC20, Ownable {
 
     /// Withdrawing of Rebalancer Token
     /// Redemption of pToken will be done in another contract
-    function withdrawRTokens(address account, uint256 amount)
-        external
-        virtual
-        onlyOwner
-        returns (uint256)
-    {
+    function withdrawRTokens(
+        address account,
+        uint256 amount
+    ) external virtual onlyOwner returns (uint256) {
         require(totalSupply() > 0 && amount > 0, "No token to withdraw");
         //Convert rebalancerToken to protocol Tokens
-        uint256 amtOfPTokens = (amount * rToPtokenConversionRate()) / 1e18;
+        console.log("From RebalancerToken.sol");
+        uint256 amt = amount * rToPtokenConversionRate();
+        console.log("rToPtokenConversionRate:", rToPtokenConversionRate());
+        console.log("amt: ", amt);
+        uint256 amtOfPTokens = amt / 1e18;
+
+        console.log("amtofPTokens:", amtOfPTokens);
         _burn(account, amount);
         require(
             IERC20(_pToken).transfer(owner(), amtOfPTokens),

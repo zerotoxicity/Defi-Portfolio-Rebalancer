@@ -1,14 +1,14 @@
 const { ethers, network } = require("hardhat");
-const { networkConfig } = require("../helper-hardhat-config");
+const { networkConfig } = require("../../helper-hardhat-config");
 
-let lendingPool;
 //Get AAVE v2 pool address
 async function getLendingPoolContract(account) {
   const lendingPoolAddressesProvider = await ethers.getContractAt(
     "ILendingPoolAddressesProvider",
-    networkConfig[network.config.chainId].aLendingPoolProvider,
+    networkConfig[network.config.chainId].poolAddrProvider,
     account
   );
+
   const lendingPoolAddress =
     await lendingPoolAddressesProvider.getLendingPool();
 
@@ -31,7 +31,16 @@ async function getAAVEBalance(lendingPoolContract, address) {
   return totalCollateralETH;
 }
 
+async function getAWETHContract(account) {
+  const aWETH = await ethers.getContractAt(
+    "IAToken",
+    networkConfig[network.config.chainId].aWETHToken,
+    account
+  );
+  return aWETH;
+}
 module.exports = {
   getLendingPoolContract,
   getAAVEBalance,
+  getAWETHContract,
 };

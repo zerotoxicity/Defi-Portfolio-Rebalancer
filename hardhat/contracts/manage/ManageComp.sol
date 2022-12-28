@@ -8,7 +8,6 @@ import "hardhat/console.sol";
 
 //Mantissa = 10^18
 contract ManageComp is ALendingProtocol {
-    //Underlying asset
     uint256 private _blocksPerYear;
 
     constructor(
@@ -16,6 +15,7 @@ contract ManageComp is ALendingProtocol {
         address rebalancerToken,
         address asset
     ) ALendingProtocol(pToken, rebalancerToken, asset) {
+        //1 block mined every ~12s
         _blocksPerYear = (60 / 12) * 60 * 24 * 365;
         IERC20(_asset).approve(_pToken, type(uint256).max);
     }
@@ -32,11 +32,10 @@ contract ManageComp is ALendingProtocol {
         );
     }
 
-    function _withdrawProtocol(address account, uint256 amount)
-        internal
-        virtual
-        override
-    {
+    function _withdrawProtocol(
+        address account,
+        uint256 amount
+    ) internal virtual override {
         require(ICToken(_pToken).redeem(amount) == 0, "Error redeeming COMP");
         IERC20(_asset).transfer(
             account,
@@ -49,13 +48,12 @@ contract ManageComp is ALendingProtocol {
         _supplyProtocol(amount);
     }
 
-    function withdraw(address account, uint256 amount)
-        external
-        virtual
-        override
-    {
+    function withdraw(
+        address account,
+        uint256 amount
+    ) external virtual override {
         require(amount > 0, "Amount==0");
-        uint256 amtOfPTokens = withdrawRebalancerTokens(account, amount);
+        uint256 amtOfPTokens = withdrawRebalancerTokens(amount);
         _withdrawProtocol(account, amtOfPTokens);
     }
 
@@ -65,5 +63,9 @@ contract ManageComp is ALendingProtocol {
 
     function getAPR() external view virtual override returns (uint256) {
         return ICToken(_pToken).supplyRatePerBlock() * _blocksPerYear;
+    }
+
+    function getBlocksPerYear() external view returns (uint256) {
+        return _blocksPerYear;
     }
 }

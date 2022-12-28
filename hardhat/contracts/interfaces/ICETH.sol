@@ -1,5 +1,5 @@
 //SPDX-License-Identifier: UNLICENSED
-pragma solidity ^0.8.10;
+pragma solidity 0.8.10;
 
 /**
  * @title Compound's CEther Contract
@@ -32,4 +32,8 @@ interface ICETH {
     function redeemUnderlying(uint redeemAmount) external returns (uint);
 
     function supplyRatePerBlock() external returns (uint);
+
+    function transfer(address dst, uint amount) external returns (bool);
+
+    function balanceOf(address owner) external view returns (uint);
 }
