@@ -3,10 +3,9 @@ const { smock } = require("@defi-wonderland/smock");
 const chai = require("chai");
 const { expect } = chai;
 chai.use(smock.matchers);
+const { deployContract } = require("../helpers/testHelper");
 
 const DEPOSIT_AMOUNT = BigInt(1e18);
-
-//This test is done using mock Aave protocol
 
 describe("💰 Rebalancer Token", () => {
   beforeEach(async () => {
@@ -17,15 +16,13 @@ describe("💰 Rebalancer Token", () => {
     this.fakeAave = await smock.fake("ALendingProtocol");
     this.fakeaWETH = await smock.fake("IAToken");
 
-    const rebalancerTokenContractFactory = await ethers.getContractFactory(
-      "RebalancerToken"
-    );
-    this.rebalancerTokenContract = await rebalancerTokenContractFactory.deploy(
+    this.rebalancerTokenContract = await deployContract("RebalancerToken", [
       "RAave-WETH",
       "RAWE",
       this.fakeaWETH.address,
-      this.fakeWeth.address
-    );
+      this.fakeWeth.address,
+    ]);
+
     tx = {
       to: this.fakeAave.address,
       value: ethers.utils.parseEther("100"),

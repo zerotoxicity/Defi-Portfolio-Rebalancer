@@ -2,7 +2,7 @@ const { ethers } = require("hardhat");
 const { smock } = require("@defi-wonderland/smock");
 const chai = require("chai");
 const { expect } = chai;
-const { deployRebalancer } = require("../helpers/testHelper");
+const { deployContract } = require("../helpers/testHelper");
 chai.use(smock.matchers);
 
 const DEPOSIT_AMOUNT = BigInt(1e18);
@@ -16,18 +16,19 @@ describe("ManageComp contract", () => {
     this.fakeCToken = await smock.fake("ICToken");
 
     //Deploy
-    this.rebalancerTokenContract = await deployRebalancer(
+    this.rebalancerTokenContract = await deployContract("RebalancerToken", [
+      "RCompDAI",
+      "RCDAI",
       this.fakeCToken.address,
-      this.fakeDai.address
-    );
-    const manageCompContractFactory = await ethers.getContractFactory(
-      "ManageComp"
-    );
-    this.manageCompContract = await manageCompContractFactory.deploy(
+      this.fakeDai.address,
+    ]);
+
+    this.manageCompContract = await deployContract("ManageComp", [
       this.fakeCToken.address,
       this.rebalancerTokenContract.address,
-      this.fakeDai.address
-    );
+      this.fakeDai.address,
+    ]);
+
     await this.rebalancerTokenContract.setAuthorised(
       this.manageCompContract.address,
       true

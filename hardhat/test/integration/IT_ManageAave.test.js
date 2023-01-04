@@ -2,7 +2,12 @@ const chai = require("chai");
 const { expect } = chai;
 const { ethers, network } = require("hardhat");
 const { networkConfig } = require("../helper-hardhat-config");
-const { getWeth, AMOUNT, addWETHToAccount } = require("../helpers/testHelper");
+const {
+  getWeth,
+  AMOUNT,
+  addWETHToAccount,
+  deployContract,
+} = require("../helpers/testHelper");
 const { getAWETHContract } = require("../helpers/aaveHelper");
 
 this.wethContractAddress = networkConfig[network.config.chainId].WETHToken;
@@ -18,26 +23,19 @@ describe("Integration ManageAave contract", () => {
     this.aWETHContract = await getAWETHContract();
 
     //--Deployment--
-    const rebalancerTokenContractFactory = await ethers.getContractFactory(
-      "RebalancerToken",
-      this.deployer
-    );
-    this.rebalancerTokenContract = await rebalancerTokenContractFactory.deploy(
+
+    this.rebalancerTokenContract = await deployContract("RebalancerToken", [
       "RAaveWETH",
       "RAWETH",
       this.aWethContractAddress,
-      this.wethContractAddress
-    );
+      this.wethContractAddress,
+    ]);
 
-    const manageAaveFactory = await ethers.getContractFactory(
-      "ManageAave",
-      this.deployer
-    );
-    this.manageAave = await manageAaveFactory.deploy(
+    this.manageAave = await deployContract("ManageAave", [
       this.aWethContractAddress,
       this.rebalancerTokenContract.address,
-      this.poolProviderAddress
-    );
+      this.poolProviderAddress,
+    ]);
 
     // --Change ownership of rebalancer token--
     await this.rebalancerTokenContract.setAuthorised(

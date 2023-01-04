@@ -2,7 +2,11 @@ const chai = require("chai");
 const { expect } = chai;
 const { ethers, network } = require("hardhat");
 const { networkConfig } = require("../helper-hardhat-config");
-const { AMOUNT, addDaiToAccount } = require("../helpers/testHelper");
+const {
+  AMOUNT,
+  addDaiToAccount,
+  deployContract,
+} = require("../helpers/testHelper");
 
 this.wethContractAddress = networkConfig[network.config.chainId].WETHToken;
 this.daiTokenAddress = networkConfig[network.config.chainId].DAIToken;
@@ -20,25 +24,18 @@ describe("Integration ManageComp contract", () => {
     );
 
     //--Deployment--
-    const rebalancerTokenContractFactory = await ethers.getContractFactory(
-      "RebalancerToken",
-      this.deployer
-    );
-    this.rebalancerTokenContract = await rebalancerTokenContractFactory.deploy(
+    this.rebalancerTokenContract = await deployContract("RebalancerToken", [
       "RCompDAI",
       "RCDAI",
       this.cDAITokenAddress,
-      this.daiTokenAddress
-    );
-    const manageCompFactory = await ethers.getContractFactory(
-      "ManageComp",
-      this.deployer
-    );
-    this.manageComp = await manageCompFactory.deploy(
+      this.daiTokenAddress,
+    ]);
+
+    this.manageComp = await deployContract("ManageComp", [
       this.cDAITokenAddress,
       this.rebalancerTokenContract.address,
-      this.daiTokenAddress
-    );
+      this.daiTokenAddress,
+    ]);
 
     await this.rebalancerTokenContract.setAuthorised(
       this.manageComp.address,

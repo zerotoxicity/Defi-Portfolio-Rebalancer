@@ -2,7 +2,7 @@ const { ethers } = require("hardhat");
 const { smock } = require("@defi-wonderland/smock");
 const chai = require("chai");
 const { expect } = chai;
-const { deployRebalancer } = require("../helpers/testHelper");
+const { deployContract } = require("../helpers/testHelper");
 
 const DEPOSIT_AMOUNT = BigInt(1e18);
 
@@ -26,19 +26,18 @@ describe(" ManageAave contract", () => {
     );
 
     //Deploy
-    this.rebalancerTokenContract = await deployRebalancer(
+    this.rebalancerTokenContract = await deployContract("RebalancerToken", [
+      "RAaveWETH",
+      "RAWETH",
       this.fakeaWETH.address,
-      this.fakeWeth.address
-    );
+      this.fakeWeth.address,
+    ]);
 
-    const manageAaveContractFactory = await ethers.getContractFactory(
-      "ManageAave"
-    );
-    this.manageAaveContract = await manageAaveContractFactory.deploy(
+    this.manageAaveContract = await deployContract("ManageAave", [
       this.fakeaWETH.address,
       this.rebalancerTokenContract.address,
-      this.fakeLendingPoolAddressProvider.address
-    );
+      this.fakeLendingPoolAddressProvider.address,
+    ]);
 
     await this.rebalancerTokenContract.setAuthorised(
       this.manageAaveContract.address,

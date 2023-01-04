@@ -5,15 +5,15 @@ import "../interfaces/IWETH.sol";
 import "../interfaces/ICETH.sol";
 import "./ManageComp.sol";
 
-import "hardhat/console.sol";
-
 //Mantissa = 10^18
 contract ManageCompWETH is ManageComp {
-    constructor(
+    function initialize(
         address pToken,
         address rebalancerToken,
         address asset
-    ) ManageComp(pToken, rebalancerToken, asset) {}
+    ) public override initializer {
+        ManageComp.initialize(pToken, rebalancerToken, asset);
+    }
 
     //Receive eth
     receive() external payable {}
@@ -30,10 +30,10 @@ contract ManageCompWETH is ManageComp {
         );
     }
 
-    function _withdrawProtocol(address account, uint256 amount)
-        internal
-        override
-    {
+    function _withdrawProtocol(
+        address account,
+        uint256 amount
+    ) internal override {
         require(ICETH(_pToken).redeem(amount) == 0, "Withdrawal failed");
         uint256 expectedValue = address(this).balance;
         IWETH(_asset).deposit{value: expectedValue}();
@@ -41,21 +41,19 @@ contract ManageCompWETH is ManageComp {
     }
 
     // Convert WETH to ETH then deposit
-    function supply(address account, uint256 amount)
-        external
-        override
-        moreThanZero(amount)
-    {
+    function supply(
+        address account,
+        uint256 amount
+    ) external override moreThanZero(amount) {
         mintRebalancerTokens(account, amount);
         _supplyProtocol(amount);
     }
 
     //Convert CETH -> ETH -> WETH
-    function withdraw(address account, uint256 amount)
-        external
-        override
-        moreThanZero(amount)
-    {
+    function withdraw(
+        address account,
+        uint256 amount
+    ) external override moreThanZero(amount) {
         uint256 amtOfPTokens = withdrawRebalancerTokens(amount);
         _withdrawProtocol(account, amtOfPTokens);
     }

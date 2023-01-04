@@ -3,6 +3,7 @@ const { smock } = require("@defi-wonderland/smock");
 const chai = require("chai");
 const { expect } = chai;
 chai.use(smock.matchers);
+const { deployContract } = require("../helpers/testHelper");
 
 const DEPOSIT_AMOUNT = BigInt(1e18);
 
@@ -23,14 +24,13 @@ describe("Manage Multiple contract", () => {
     this.fakeManageAave.getAPR.returns(1);
     this.fakeManageComp.getAPR.returns(2);
 
-    const manageMultipleFactory = await ethers.getContractFactory(
-      "ManageMultiple"
-    );
     const manageProtocols = [
       this.fakeManageAave.address,
       this.fakeManageComp.address,
     ];
-    this.manageMultiple = await manageMultipleFactory.deploy(manageProtocols);
+    this.manageMultiple = await deployContract("ManageMultiple", [
+      manageProtocols,
+    ]);
   });
   describe("👍 getCurrentBest()", () => {
     it("returns contract with the highest APR", async () => {

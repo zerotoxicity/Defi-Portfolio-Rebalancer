@@ -1,16 +1,21 @@
 pragma solidity 0.8.10;
 
-import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
-import "@openzeppelin/contracts/access/Ownable.sol";
 import "./interfaces/ILendingProtocolCore.sol";
 import "./interfaces/ICToken.sol";
 import "./ALendingProtocol.sol";
-
-import "hardhat/console.sol";
+import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
+import "@openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/token/ERC20/ERC20Upgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
 
 //For individual protocols
-contract RebalancerToken is ERC20, Ownable {
+contract RebalancerToken is
+    Initializable,
+    UUPSUpgradeable,
+    ERC20Upgradeable,
+    OwnableUpgradeable
+{
     //Address of protocol token e.g., aWETH, COMP tokens
     address private _pToken;
     //Underlying asset e.g., WETH
@@ -18,16 +23,21 @@ contract RebalancerToken is ERC20, Ownable {
     address private _manageProtocol;
     mapping(address => bool) _authorised;
 
-    constructor(
+    function initialize(
         string memory name,
         string memory symbol,
         address pToken,
         address underlying
-    ) ERC20(name, symbol) {
+    ) public initializer {
+        __ERC20_init(name, symbol);
+        __Ownable_init();
+        __UUPSUpgradeable_init();
         _pToken = pToken;
         _underlying = underlying;
         _authorised[msg.sender] = true;
     }
+
+    function _authorizeUpgrade(address) internal override onlyOwner {}
 
     modifier onlyAuthorised() {
         require(_authorised[msg.sender] == true, "Unauthorised");

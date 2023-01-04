@@ -3,9 +3,16 @@ pragma solidity 0.8.10;
 import "./interfaces/ILendingProtocolCore.sol";
 import "./interfaces/IRebalancerToken.sol";
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
-import "@openzeppelin/contracts/access/Ownable.sol";
+import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
+import "@openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
 
-abstract contract ALendingProtocol is Ownable, ILendingProtocolCore {
+abstract contract ALendingProtocol is
+    Initializable,
+    UUPSUpgradeable,
+    OwnableUpgradeable,
+    ILendingProtocolCore
+{
     //aToken e.g., aWETH
     address internal _pToken;
     //Underlying asset e.g., WETH
@@ -42,13 +49,21 @@ abstract contract ALendingProtocol is Ownable, ILendingProtocolCore {
         _;
     }
 
-    constructor(address pToken, address rebalancerToken, address asset) {
+    function __ALendingProtocol_init(
+        address pToken,
+        address rebalancerToken,
+        address asset
+    ) internal onlyInitializing {
+        __UUPSUpgradeable_init();
+        __Ownable_init();
         _pToken = pToken;
         _asset = asset;
         _rebalancerToken = rebalancerToken;
         _currentBest = address(this);
         _wrapper[msg.sender] = true;
     }
+
+    function _authorizeUpgrade(address) internal override onlyOwner {}
 
     function _supplyProtocol(uint256 amount) internal virtual;
 

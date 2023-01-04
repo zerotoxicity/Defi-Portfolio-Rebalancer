@@ -1,20 +1,27 @@
-const { ethers, network } = require("hardhat");
+const { ethers, network, upgrades } = require("hardhat");
 const { networkConfig } = require("../helper-hardhat-config");
 
 //Amount to convert to WETH
 const AMOUNT = ethers.utils.parseEther("1");
 
+async function deployContract(contractName, args) {
+  const contractFactory = await ethers.getContractFactory(contractName);
+  const contract = await upgrades.deployProxy(contractFactory, args, {
+    kind: "uups",
+  });
+  return contract;
+}
+
 async function deployRebalancer(pTokenAddr, assetAddr) {
   const rebalancerTokenContractFactory = await ethers.getContractFactory(
     "RebalancerToken"
   );
-  rebalancerTokenContract = await rebalancerTokenContractFactory.deploy(
+  return await rebalancerTokenContractFactory.deploy(
     "Rebalancer",
     "Reb",
     pTokenAddr,
     assetAddr
   );
-  return rebalancerTokenContract;
 }
 
 async function getUniswapRouterContract() {
@@ -75,6 +82,7 @@ async function addWETHToAccount(signer, amount) {
 
 module.exports = {
   AMOUNT,
+  deployContract,
   deployRebalancer,
   getWeth,
   getUniswapRouterContract,

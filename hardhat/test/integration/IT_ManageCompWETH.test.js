@@ -2,7 +2,12 @@ const chai = require("chai");
 const { expect } = chai;
 const { ethers, network } = require("hardhat");
 const { networkConfig } = require("../helper-hardhat-config");
-const { getWeth, AMOUNT, addWETHToAccount } = require("../helpers/testHelper");
+const {
+  deployContract,
+  getWeth,
+  AMOUNT,
+  addWETHToAccount,
+} = require("../helpers/testHelper");
 
 this.wethContractAddress = networkConfig[network.config.chainId].WETHToken;
 this.cETHContractAddress = networkConfig[network.config.chainId].cETHToken;
@@ -14,33 +19,22 @@ describe("Integration ManageCompWETH contract", () => {
     this.wethContract = await getWeth();
 
     //--Deployment--
-    const rebalancerTokenContractFactory = await ethers.getContractFactory(
-      "RebalancerToken",
-      this.deployer
-    );
-    this.rebalancerTokenContract = await rebalancerTokenContractFactory.deploy(
+    this.rebalancerTokenContract = await deployContract("RebalancerToken", [
       "RCompETH",
       "RCETH",
       this.cETHContractAddress,
-      this.wethContractAddress
-    );
-
-    const manageCompFactory = await ethers.getContractFactory(
-      "ManageCompWETH",
-      this.deployer
-    );
-
-    this.manageComp = await manageCompFactory.deploy(
+      this.wethContractAddress,
+    ]);
+    this.manageComp = await deployContract("ManageCompWETH", [
       this.cETHContractAddress,
       this.rebalancerTokenContract.address,
-      this.wethContractAddress
-    );
-
+      this.wethContractAddress,
+    ]);
     await this.rebalancerTokenContract.setAuthorised(
       this.manageComp.address,
       true
     );
-
+    console.log("?");
     this.cETHContract = await ethers.getContractAt(
       "ICETH",
       this.cETHContractAddress,

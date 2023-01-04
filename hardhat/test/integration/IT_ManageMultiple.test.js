@@ -8,6 +8,7 @@ const {
   AMOUNT,
   addWETHToAccount,
   getUniswapRouterContract,
+  deployContract,
 } = require("../helpers/testHelper");
 
 this.wethContractAddress = networkConfig[network.config.chainId].WETHToken;
@@ -23,39 +24,25 @@ describe("Integration Test ManageMultiple Contract", () => {
     this.wethContract = await getWeth();
 
     //--Deployment--
-    const rebalancerTokenContractFactory = await ethers.getContractFactory(
-      "RebalancerToken",
-      this.deployer
-    );
-
-    this.rebalancerTokenContract = await rebalancerTokenContractFactory.deploy(
+    this.rebalancerTokenContract = await deployContract("RebalancerToken", [
       "RCompETH",
       "RCETH",
       this.cETHContractAddress,
-      this.wethContractAddress
-    );
+      this.wethContractAddress,
+    ]);
 
     //Deploy both lending protocols
-    const manageCompFactory = await ethers.getContractFactory(
-      "ManageCompWETH",
-      this.deployer
-    );
-
-    this.manageComp = await manageCompFactory.deploy(
+    this.manageComp = await deployContract("ManageCompWETH", [
       this.cETHContractAddress,
       this.rebalancerTokenContract.address,
-      this.wethContractAddress
-    );
+      this.wethContractAddress,
+    ]);
 
-    const manageAaveFactory = await ethers.getContractFactory(
-      "ManageAave",
-      this.deployer
-    );
-    this.manageAave = await manageAaveFactory.deploy(
+    this.manageAave = await deployContract("ManageAave", [
       this.aWethContractAddress,
       this.rebalancerTokenContract.address,
-      this.poolProviderAddress
-    );
+      this.poolProviderAddress,
+    ]);
     this.manageProtocolsAddress = [
       this.manageComp.address,
       this.manageAave.address,
@@ -63,14 +50,9 @@ describe("Integration Test ManageMultiple Contract", () => {
 
     this.manageProtocols = [this.manageAave, this.manageComp];
 
-    const manageMultipleFactory = await ethers.getContractFactory(
-      "ManageMultiple",
-      this.deployer
-    );
-
-    this.manageMultiple = await manageMultipleFactory.deploy(
-      this.manageProtocolsAddress
-    );
+    this.manageMultiple = await deployContract("ManageMultiple", [
+      this.manageProtocolsAddress,
+    ]);
 
     const allProtocols = [...this.manageProtocols, this.manageMultiple];
     for (const protocols of allProtocols) {

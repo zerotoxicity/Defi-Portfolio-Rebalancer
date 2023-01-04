@@ -7,25 +7,23 @@ import "../interfaces/ILendingPool.sol";
 import "../ALendingProtocol.sol";
 import {DataTypes} from "@aave/protocol-v2/contracts/protocol/libraries/types/DataTypes.sol";
 
-import "hardhat/console.sol";
-
 contract ManageAave is ALendingProtocol {
-    ILendingPoolAddressesProvider private _poolProvider;
+    address private _poolProviderAddr;
 
-    constructor(
+    function initialize(
         address pToken,
         address rebalancerToken,
-        address poolAddrProvider
-    )
-        ALendingProtocol(
+        address poolProviderAddr
+    ) public initializer {
+        __ALendingProtocol_init(
             pToken,
             rebalancerToken,
             IAToken(pToken).UNDERLYING_ASSET_ADDRESS()
-        )
-    {
-        _poolProvider = ILendingPoolAddressesProvider(poolAddrProvider);
+        );
+        _poolProviderAddr = poolProviderAddr;
+
         IERC20(_asset).approve(
-            _poolProvider.getLendingPool(),
+            ILendingPoolAddressesProvider(_poolProviderAddr).getLendingPool(),
             type(uint256).max
         );
     }
@@ -36,7 +34,8 @@ contract ManageAave is ALendingProtocol {
     }
 
     function _supplyProtocol(uint256 amount) internal override {
-        address poolAddr = _poolProvider.getLendingPool();
+        address poolAddr = ILendingPoolAddressesProvider(_poolProviderAddr)
+            .getLendingPool();
         ILendingPool(poolAddr).deposit(_asset, amount, _rebalancerToken, 0);
     }
 
@@ -44,7 +43,8 @@ contract ManageAave is ALendingProtocol {
         address account,
         uint256 amount
     ) internal override {
-        address poolAddr = _poolProvider.getLendingPool();
+        address poolAddr = ILendingPoolAddressesProvider(_poolProviderAddr)
+            .getLendingPool();
         ILendingPool(poolAddr).withdraw(_asset, amount, account);
     }
 
@@ -65,8 +65,11 @@ contract ManageAave is ALendingProtocol {
     }
 
     function getAPR() external view override returns (uint256) {
-        ILendingPool pool = ILendingPool(_poolProvider.getLendingPool());
-        DataTypes.ReserveData memory reserveData = pool.getReserveData(_asset);
+        address lendingPoolAddr = ILendingPoolAddressesProvider(
+            _poolProviderAddr
+        ).getLendingPool();
+        DataTypes.ReserveData memory reserveData = ILendingPool(lendingPoolAddr)
+            .getReserveData(_asset);
         //Reserve data mantissa = 1e27, so divide by 1e9
         return uint256(reserveData.currentLiquidityRate) / 1e9;
     }

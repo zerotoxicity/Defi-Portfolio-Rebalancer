@@ -4,10 +4,16 @@ import "./ALendingProtocol.sol";
 import "./interfaces/ILendingProtocolCore.sol";
 import "./RebalancerToken.sol";
 import "@openzeppelin/contracts/interfaces/IERC20.sol";
+import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
+import "@openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
 
-import "hardhat/console.sol";
-
-contract ManageMultiple is ILendingProtocolCore {
+contract ManageMultiple is
+    ILendingProtocolCore,
+    Initializable,
+    UUPSUpgradeable,
+    OwnableUpgradeable
+{
     address[] private _manageProtocols;
     address private _currentBest;
     address private _asset;
@@ -18,7 +24,9 @@ contract ManageMultiple is ILendingProtocolCore {
         _;
     }
 
-    constructor(address[] memory manageProtocols) {
+    function initialize(address[] memory manageProtocols) public initializer {
+        __UUPSUpgradeable_init();
+        __Ownable_init();
         _manageProtocols = manageProtocols;
         _rebalancerToken = ALendingProtocol(manageProtocols[0])
             .getRebalancerTokenAddress();
@@ -44,6 +52,8 @@ contract ManageMultiple is ILendingProtocolCore {
         _currentBest = manageProtocols[index];
     }
 
+    function _authorizeUpgrade(address) internal override onlyOwner {}
+
     function supply(address account, uint256 amount) external rebalanceCheck {
         require(IERC20(_asset).allowance(msg.sender, address(this)) >= amount);
         IERC20(_asset).transferFrom(msg.sender, address(this), amount);
@@ -65,6 +75,18 @@ contract ManageMultiple is ILendingProtocolCore {
     }
 
     function rebalance() public {
+        address nextBest = _getBestAPR();
+        if (_currentBest != nextBest) {
+            ALendingProtocol(_currentBest).rebalancingWithdraw(nextBest);
+            ALendingProtocol(nextBest).rebalancingSupply();
+            IRebalancerToken(_rebalancerToken).setpToken(
+                ALendingProtocol(nextBest).getpToken()
+            );
+            _currentBest = nextBest;
+        }
+    }
+
+    function _getBestAPR() private view returns (address) {
         address nextBest = _currentBest;
         uint256 currentBestAPR = ALendingProtocol(_currentBest).getAPR();
         for (uint i = 0; i < _manageProtocols.length; i++) {
@@ -75,14 +97,7 @@ contract ManageMultiple is ILendingProtocolCore {
                 currentBestAPR = currentIterationAPR;
             }
         }
-        if (_currentBest != nextBest) {
-            ALendingProtocol(_currentBest).rebalancingWithdraw(nextBest);
-            ALendingProtocol(nextBest).rebalancingSupply();
-            IRebalancerToken(_rebalancerToken).setpToken(
-                ALendingProtocol(nextBest).getpToken()
-            );
-            _currentBest = nextBest;
-        }
+        return nextBest;
     }
 
     function getAPR() external view returns (uint256) {

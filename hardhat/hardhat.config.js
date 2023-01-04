@@ -2,6 +2,7 @@ require("dotenv").config();
 require("@nomicfoundation/hardhat-toolbox");
 require("@nomicfoundation/hardhat-chai-matchers");
 require("hardhat-deploy");
+require("@openzeppelin/hardhat-upgrades");
 require("solidity-coverage");
 
 const MAINNET_RPC_URL = process.env.MAINNET_RPC_URL;

@@ -1,6 +1,6 @@
 const { ethers } = require("hardhat");
 const { smock } = require("@defi-wonderland/smock");
-const { deployRebalancer } = require("../helpers/testHelper");
+const { deployContract } = require("../helpers/testHelper");
 const chai = require("chai");
 const { expect } = chai;
 chai.use(smock.matchers);
@@ -16,19 +16,19 @@ describe("ManageCompWETH contract", () => {
     this.fakeCeth = await smock.fake("ICETH");
 
     //Deploy
-    this.rebalancerTokenContract = await deployRebalancer(
+    this.rebalancerTokenContract = await deployContract("RebalancerToken", [
+      "RCompETH",
+      "RCETH",
       this.fakeCeth.address,
-      this.fakeWeth.address
-    );
-    const manageCompWETHContractFactory = await ethers.getContractFactory(
-      "ManageCompWETH"
-    );
+      this.fakeWeth.address,
+    ]);
 
-    this.manageComp = await manageCompWETHContractFactory.deploy(
+    this.manageComp = await deployContract("ManageCompWETH", [
       this.fakeCeth.address,
       this.rebalancerTokenContract.address,
-      this.fakeWeth.address
-    );
+      this.fakeWeth.address,
+    ]);
+
     //Send 100 ETH to the contract
     await this.accounts[0].sendTransaction({
       to: this.manageComp.address,

@@ -4,18 +4,16 @@ pragma solidity 0.8.10;
 import "../interfaces/ICToken.sol";
 import "../ALendingProtocol.sol";
 
-import "hardhat/console.sol";
-
 //Mantissa = 10^18
 contract ManageComp is ALendingProtocol {
     uint256 private _blocksPerYear;
 
-    constructor(
+    function initialize(
         address pToken,
         address rebalancerToken,
         address asset
-    ) ALendingProtocol(pToken, rebalancerToken, asset) {
-        //1 block mined every ~12s
+    ) public virtual initializer {
+        __ALendingProtocol_init(pToken, rebalancerToken, asset);
         _blocksPerYear = (60 / 12) * 60 * 24 * 365;
         IERC20(_asset).approve(_pToken, type(uint256).max);
     }
