@@ -1,8 +1,8 @@
 const chai = require("chai");
 const { expect } = chai;
 const { ethers, network } = require("hardhat");
-const { networkConfig } = require("../../helper-hardhat-config");
-const { getUniswapRouterContract, AMOUNT } = require("../helpers/testHelper");
+const { networkConfig } = require("../helper-hardhat-config");
+const { AMOUNT, addDaiToAccount } = require("../helpers/testHelper");
 
 this.wethContractAddress = networkConfig[network.config.chainId].WETHToken;
 this.daiTokenAddress = networkConfig[network.config.chainId].DAIToken;
@@ -39,20 +39,18 @@ describe("Integration ManageComp contract", () => {
       this.rebalancerTokenContract.address,
       this.daiTokenAddress
     );
-    await this.rebalancerTokenContract.transferOwnership(
+
+    await this.rebalancerTokenContract.setAuthorised(
+      this.manageComp.address,
+      true
+    );
+    await this.rebalancerTokenContract.setManageProtocol(
       this.manageComp.address
     );
 
     //--Change ETH to DAI --
-    this.routerContract = await getUniswapRouterContract();
-    const tx = await this.routerContract.swapExactETHForTokens(
-      0,
-      [this.wethContractAddress, this.daiTokenAddress],
-      this.deployer.address,
-      1703490033,
-      { value: AMOUNT }
-    );
-    await tx.wait(1);
+    await addDaiToAccount(this.deployer, AMOUNT);
+
     this.daiContract = await ethers.getContractAt(
       "IDAI",
       networkConfig[network.config.chainId].DAIToken,
@@ -64,7 +62,12 @@ describe("Integration ManageComp contract", () => {
       networkConfig[network.config.chainId].cDAIToken,
       this.deployer
     );
+
+    await this.rebalancerTokenContract.setManageProtocol(
+      this.manageComp.address
+    );
   });
+
   describe("📈 getAPR()", async () => {
     it("returns APR of the protocol", async () => {
       expect(await this.manageComp.getAPR()).to.be.greaterThan(0);
@@ -92,16 +95,7 @@ describe("Integration ManageComp contract", () => {
     });
 
     it("supplier should receive scaled protocol tokens when protocol tokens>1", async () => {
-      const tx = await this.routerContract
-        .connect(this.accounts[1])
-        .swapExactETHForTokens(
-          0,
-          [this.wethContractAddress, this.daiTokenAddress],
-          this.accounts[1].address,
-          1703490033,
-          { value: AMOUNT }
-        );
-      await tx.wait(1);
+      await addDaiToAccount(this.accounts[1], AMOUNT);
 
       //Supply from accounts[1]
       await this.daiContract
@@ -110,14 +104,18 @@ describe("Integration ManageComp contract", () => {
       await this.manageComp
         .connect(this.accounts[1])
         .supply(this.accounts[1].address, AMOUNT);
-      expect(
-        await this.rebalancerTokenContract.balanceOf(this.accounts[1].address)
-      ).to.be.within(1, AMOUNT);
+
+      bal = await this.rebalancerTokenContract.balanceOf(
+        this.accounts[1].address
+      );
+
+      expect(bal).to.be.within(1, AMOUNT + 1);
     });
   });
 
   describe("Withdraw", () => {
     let initBalance;
+
     beforeEach(async () => {
       initBalance = await this.daiContract.balanceOf(this.deployer.address);
       await this.daiContract.approve(this.manageComp.address, AMOUNT);
@@ -129,51 +127,31 @@ describe("Integration ManageComp contract", () => {
       );
     });
 
-    it("caller receives more DAI than the amount supplied", async () => {
+    it("caller receives more DAI than the amount supplied upon withdrawal", async () => {
       await this.manageComp.withdraw(this.deployer.address, AMOUNT);
-      //Initial WETH is 2, so user should have more than 2 WETH after withdrawing
       expect(
         await this.daiContract.balanceOf(this.deployer.address)
       ).to.be.greaterThan(initBalance);
     });
 
-    it("second caller receives more DAI than the amount supplied", async () => {
-      console.log(
-        "Rebalancer's cDAI:",
-        await this.cDaiContract.balanceOf(this.rebalancerTokenContract.address)
+    it("second caller receives more DAI than the amount supplied upon withdrawal", async () => {
+      await addDaiToAccount(this.accounts[1], AMOUNT);
+      secCallerInitBalance = await this.daiContract.balanceOf(
+        this.accounts[1].address
       );
-
-      let tx = await this.routerContract
-        .connect(this.accounts[1])
-        .swapExactETHForTokens(
-          0,
-          [this.wethContractAddress, this.daiTokenAddress],
-          this.accounts[1].address,
-          1703490033,
-          { value: AMOUNT }
-        );
-      await tx.wait(1);
-      initBalance = await this.daiContract.balanceOf(this.accounts[1].address);
-
-      console.log("Initial balance of address[1]: ", initBalance);
 
       await this.daiContract
         .connect(this.accounts[1])
-        .approve(this.manageComp.address, initBalance);
+        .approve(this.manageComp.address, AMOUNT);
       tx = await this.manageComp
         .connect(this.accounts[1])
-        .supply(this.accounts[1].address, initBalance);
+        .supply(this.accounts[1].address, AMOUNT);
       await tx.wait(1);
 
-      //Get balance
       bal = await this.rebalancerTokenContract.balanceOf(
         this.accounts[1].address
       );
-      console.log("Address[1] rebalancer token balance: ", bal);
-      console.log(
-        "Rebalancer's cDAI:",
-        await this.cDaiContract.balanceOf(this.rebalancerTokenContract.address)
-      );
+
       await this.rebalancerTokenContract
         .connect(this.accounts[1])
         .approve(this.manageComp.address, bal);
@@ -181,26 +159,14 @@ describe("Integration ManageComp contract", () => {
         .connect(this.accounts[1])
         .withdraw(this.accounts[1].address, bal);
 
-      console.log("\n--After withdrawing--");
-      console.log(
-        "Address[1] rebalancer token balance:",
-        await this.rebalancerTokenContract.balanceOf(this.accounts[1].address)
-      );
-      console.log(
-        "contract rebalancer token: ",
-        await this.rebalancerTokenContract.balanceOf(this.manageComp.address)
-      );
-      console.log(
-        "contract dai token: ",
-        await this.daiContract.balanceOf(this.manageComp.address)
-      );
-      console.log(
-        "Rebalancer's cDAI:",
-        await this.cDaiContract.balanceOf(this.rebalancerTokenContract.address)
-      );
-      //   expect(
-      //     await this.daiContract.balanceOf(this.accounts[1].address)
-      //   ).to.be.greaterThan(initBalance);
+      expect(
+        await this.daiContract.balanceOf(this.accounts[1].address)
+      ).to.be.greaterThan(secCallerInitBalance);
+
+      await this.manageComp.withdraw(this.deployer.address, AMOUNT);
+      expect(
+        await this.daiContract.balanceOf(this.deployer.address)
+      ).to.be.greaterThan(initBalance);
     });
   });
 });

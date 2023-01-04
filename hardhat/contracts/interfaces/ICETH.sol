@@ -35,5 +35,7 @@ interface ICETH {
 
     function transfer(address dst, uint amount) external returns (bool);
 
+    function approve(address spender, uint amount) external returns (bool);
+
     function balanceOf(address owner) external view returns (uint);
 }

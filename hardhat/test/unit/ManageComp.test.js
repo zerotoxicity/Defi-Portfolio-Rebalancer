@@ -2,9 +2,10 @@ const { ethers } = require("hardhat");
 const { smock } = require("@defi-wonderland/smock");
 const chai = require("chai");
 const { expect } = chai;
-const { DEPOSIT_AMOUNT, deployRebalancer } = require("./TestHelpers");
-
+const { deployRebalancer } = require("../helpers/testHelper");
 chai.use(smock.matchers);
+
+const DEPOSIT_AMOUNT = BigInt(1e18);
 
 describe("ManageComp contract", () => {
   beforeEach(async () => {
@@ -27,7 +28,12 @@ describe("ManageComp contract", () => {
       this.rebalancerTokenContract.address,
       this.fakeDai.address
     );
-    await this.rebalancerTokenContract.transferOwnership(
+    await this.rebalancerTokenContract.setAuthorised(
+      this.manageCompContract.address,
+      true
+    );
+
+    await this.rebalancerTokenContract.setManageProtocol(
       this.manageCompContract.address
     );
   });

@@ -7,6 +7,8 @@ import "../interfaces/ILendingPool.sol";
 import "../ALendingProtocol.sol";
 import {DataTypes} from "@aave/protocol-v2/contracts/protocol/libraries/types/DataTypes.sol";
 
+import "hardhat/console.sol";
+
 contract ManageAave is ALendingProtocol {
     ILendingPoolAddressesProvider private _poolProvider;
 
@@ -34,16 +36,16 @@ contract ManageAave is ALendingProtocol {
     }
 
     function _supplyProtocol(uint256 amount) internal override {
-        ILendingPool pool = ILendingPool(_poolProvider.getLendingPool());
-        pool.deposit(_asset, amount, _rebalancerToken, 0);
+        address poolAddr = _poolProvider.getLendingPool();
+        ILendingPool(poolAddr).deposit(_asset, amount, _rebalancerToken, 0);
     }
 
     function _withdrawProtocol(
         address account,
         uint256 amount
     ) internal override {
-        ILendingPool pool = ILendingPool(_poolProvider.getLendingPool());
-        pool.withdraw(_asset, amount, account);
+        address poolAddr = _poolProvider.getLendingPool();
+        ILendingPool(poolAddr).withdraw(_asset, amount, account);
     }
 
     function supply(

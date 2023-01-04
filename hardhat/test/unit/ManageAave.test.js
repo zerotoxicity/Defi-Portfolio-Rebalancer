@@ -2,7 +2,9 @@ const { ethers } = require("hardhat");
 const { smock } = require("@defi-wonderland/smock");
 const chai = require("chai");
 const { expect } = chai;
-const { DEPOSIT_AMOUNT, deployRebalancer } = require("../TestHelpers");
+const { deployRebalancer } = require("../helpers/testHelper");
+
+const DEPOSIT_AMOUNT = BigInt(1e18);
 
 chai.use(smock.matchers);
 
@@ -38,7 +40,11 @@ describe(" ManageAave contract", () => {
       this.fakeLendingPoolAddressProvider.address
     );
 
-    await this.rebalancerTokenContract.transferOwnership(
+    await this.rebalancerTokenContract.setAuthorised(
+      this.manageAaveContract.address,
+      true
+    );
+    await this.rebalancerTokenContract.setManageProtocol(
       this.manageAaveContract.address
     );
   });
@@ -82,7 +88,7 @@ describe(" ManageAave contract", () => {
           this.accounts[0].address,
           this.manageAaveContract.address
         )
-        .returns(DEPOSIT_AMOUNT);
+        .returns(BigInt(1e18));
 
       await this.manageAaveContract.supply(
         this.accounts[0].address,
@@ -91,7 +97,7 @@ describe(" ManageAave contract", () => {
 
       expect(
         await this.rebalancerTokenContract.balanceOf(this.accounts[0].address)
-      ).to.be.equal(DEPOSIT_AMOUNT);
+      ).to.be.equal(BigInt(1e18));
     });
   });
 

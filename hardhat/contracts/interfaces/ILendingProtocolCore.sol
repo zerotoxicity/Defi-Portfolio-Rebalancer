@@ -7,5 +7,9 @@ interface ILendingProtocolCore {
 
     function getAPR() external view returns (uint256);
 
+    function getpToken() external view returns (address);
+
+    function getCurrentBest() external view returns (address);
+
     function getConversionRate() external view returns (uint256);
 }

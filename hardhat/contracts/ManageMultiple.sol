@@ -2,6 +2,7 @@ pragma solidity 0.8.10;
 
 import "./ALendingProtocol.sol";
 import "./interfaces/ILendingProtocolCore.sol";
+import "./RebalancerToken.sol";
 import "@openzeppelin/contracts/interfaces/IERC20.sol";
 
 import "hardhat/console.sol";
@@ -27,9 +28,9 @@ contract ManageMultiple is ILendingProtocolCore {
         uint256 index;
 
         for (uint i = 0; i < manageProtocols.length; i++) {
-            IERC20(_asset).approve(manageProtocols[0], type(uint256).max);
+            IERC20(_asset).approve(manageProtocols[i], type(uint256).max);
             IERC20(_rebalancerToken).approve(
-                manageProtocols[0],
+                manageProtocols[i],
                 type(uint256).max
             );
 
@@ -45,7 +46,7 @@ contract ManageMultiple is ILendingProtocolCore {
 
     function supply(address account, uint256 amount) external rebalanceCheck {
         require(IERC20(_asset).allowance(msg.sender, address(this)) >= amount);
-
+        IERC20(_asset).transferFrom(msg.sender, address(this), amount);
         ALendingProtocol(_currentBest).supply(account, amount);
     }
 
@@ -53,6 +54,11 @@ contract ManageMultiple is ILendingProtocolCore {
         require(
             IERC20(_rebalancerToken).allowance(msg.sender, address(this)) >=
                 amount
+        );
+        IERC20(_rebalancerToken).transferFrom(
+            msg.sender,
+            address(this),
+            amount
         );
 
         ALendingProtocol(_currentBest).withdraw(account, amount);
@@ -72,12 +78,19 @@ contract ManageMultiple is ILendingProtocolCore {
         if (_currentBest != nextBest) {
             ALendingProtocol(_currentBest).rebalancingWithdraw(nextBest);
             ALendingProtocol(nextBest).rebalancingSupply();
+            IRebalancerToken(_rebalancerToken).setpToken(
+                ALendingProtocol(nextBest).getpToken()
+            );
             _currentBest = nextBest;
         }
     }
 
     function getAPR() external view returns (uint256) {
         return ALendingProtocol(_currentBest).getAPR();
+    }
+
+    function getpToken() external view returns (address) {
+        return ALendingProtocol(_currentBest).getpToken();
     }
 
     function getCurrentBest() external view returns (address) {

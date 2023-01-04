@@ -1,7 +1,5 @@
 const { ethers, network } = require("hardhat");
-const { networkConfig } = require("../../helper-hardhat-config");
-
-const DEPOSIT_AMOUNT = BigInt(100);
+const { networkConfig } = require("../helper-hardhat-config");
 
 //Amount to convert to WETH
 const AMOUNT = ethers.utils.parseEther("1");
@@ -44,24 +42,42 @@ async function getWeth() {
   return iWeth;
 }
 
-//Get balance of the ERC20 token
-//currently hardcoded WETH
-async function getBalance(erc20Contract, account, symbol) {
-  const balance = await erc20Contract.balanceOf(account);
-  console.log("💰 " + account + " -");
-  console.log(` ${symbol} balance: ${balance} `);
-  console.log(
-    ` ${symbol} balance: ${ethers.utils.formatEther(balance).toString()} `
-  );
+async function addDaiToAccount(signer, amount) {
+  wethContractAddress = networkConfig[network.config.chainId].WETHToken;
+  daiTokenAddress = networkConfig[network.config.chainId].DAIToken;
 
-  console.log("-----\n");
-  return balance;
+  routerContract = await getUniswapRouterContract();
+  const tx = await routerContract
+    .connect(signer)
+    .swapExactETHForTokens(
+      0,
+      [wethContractAddress, daiTokenAddress],
+      signer.address,
+      1703490033,
+      { value: amount }
+    );
+  await tx.wait(1);
+}
+
+async function addWETHToAccount(signer, amount) {
+  wethContractAddress = networkConfig[network.config.chainId].WETHToken;
+
+  const iWeth = await ethers.getContractAt(
+    "IWETH",
+    wethContractAddress,
+    signer
+  );
+  const txResponse = await iWeth.connect(signer).deposit({
+    value: amount,
+  });
+  await txResponse.wait(1);
 }
 
 module.exports = {
   AMOUNT,
   deployRebalancer,
   getWeth,
-  getBalance,
   getUniswapRouterContract,
+  addDaiToAccount,
+  addWETHToAccount,
 };

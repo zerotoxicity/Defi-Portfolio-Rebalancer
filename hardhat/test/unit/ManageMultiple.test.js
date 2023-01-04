@@ -2,9 +2,9 @@ const { ethers } = require("hardhat");
 const { smock } = require("@defi-wonderland/smock");
 const chai = require("chai");
 const { expect } = chai;
-const { DEPOSIT_AMOUNT, deployRebalancer } = require("./TestHelpers");
-
 chai.use(smock.matchers);
+
+const DEPOSIT_AMOUNT = BigInt(1e18);
 
 describe("Manage Multiple contract", () => {
   beforeEach(async () => {

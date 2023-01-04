@@ -11,12 +11,20 @@ abstract contract ALendingProtocol is Ownable, ILendingProtocolCore {
     //Underlying asset e.g., WETH
     address internal _asset;
     address internal _rebalancerToken;
-    address private _wrapper;
+    address private _currentBest;
+    mapping(address => bool) _wrapper;
 
     modifier moreThanZero(uint256 amount) {
         require(amount > 0, "Amount <=0");
         _;
     }
+
+    modifier onlyRebalancer() {
+        require(msg.sender != address(0), "Wrapper is not defined");
+        require(_wrapper[msg.sender], "Only callable by Rebalancer");
+        _;
+    }
+
     modifier allowanceCheck(uint256 amount, bool supplying) {
         if (supplying) {
             require(
@@ -38,6 +46,8 @@ abstract contract ALendingProtocol is Ownable, ILendingProtocolCore {
         _pToken = pToken;
         _asset = asset;
         _rebalancerToken = rebalancerToken;
+        _currentBest = address(this);
+        _wrapper[msg.sender] = true;
     }
 
     function _supplyProtocol(uint256 amount) internal virtual;
@@ -55,8 +65,16 @@ abstract contract ALendingProtocol is Ownable, ILendingProtocolCore {
         return _asset;
     }
 
-    function getPToken() external view returns (address) {
+    function getpToken() external view returns (address) {
         return _pToken;
+    }
+
+    function getCurrentBest() external view returns (address) {
+        return _currentBest;
+    }
+
+    function getWrapper(address queryAddr) external view returns (bool) {
+        return _wrapper[queryAddr];
     }
 
     function mintRebalancerTokens(
@@ -82,21 +100,15 @@ abstract contract ALendingProtocol is Ownable, ILendingProtocolCore {
             );
     }
 
-    function setWrapper(address wrapper) external onlyOwner {
-        _wrapper = wrapper;
+    function setWrapper(address wrapperAddr, bool value) external onlyOwner {
+        _wrapper[wrapperAddr] = value;
     }
 
-    function rebalancingSupply() external {
-        require(msg.sender == _wrapper, "Only callable by Rebalancer");
+    function rebalancingSupply() external onlyRebalancer {
         _supplyProtocol(IERC20(_asset).balanceOf(address(this)));
     }
 
-    function rebalancingWithdraw(address nextBest) external {
-        require(msg.sender == _wrapper, "Only callable by Rebalancer");
+    function rebalancingWithdraw(address nextBest) external onlyRebalancer {
         _withdrawProtocol(nextBest, IERC20(_pToken).balanceOf(address(this)));
-    }
-
-    function getWrapper() external view returns (address) {
-        return _wrapper;
     }
 }

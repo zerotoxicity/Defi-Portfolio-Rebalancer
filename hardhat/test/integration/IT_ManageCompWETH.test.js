@@ -3,19 +3,15 @@ const { expect } = chai;
 const { ethers, network } = require("hardhat");
 const { networkConfig } = require("../helper-hardhat-config");
 const { getWeth, AMOUNT, addWETHToAccount } = require("../helpers/testHelper");
-const { getAWETHContract } = require("../helpers/aaveHelper");
 
 this.wethContractAddress = networkConfig[network.config.chainId].WETHToken;
-this.aWethContractAddress = networkConfig[network.config.chainId].aWETHToken;
-this.poolProviderAddress =
-  networkConfig[network.config.chainId].poolAddrProvider;
+this.cETHContractAddress = networkConfig[network.config.chainId].cETHToken;
 
-describe("Integration ManageAave contract", () => {
+describe("Integration ManageCompWETH contract", () => {
   beforeEach(async () => {
     this.accounts = await ethers.getSigners();
     this.deployer = this.accounts[0];
     this.wethContract = await getWeth();
-    this.aWETHContract = await getAWETHContract();
 
     //--Deployment--
     const rebalancerTokenContractFactory = await ethers.getContractFactory(
@@ -23,68 +19,73 @@ describe("Integration ManageAave contract", () => {
       this.deployer
     );
     this.rebalancerTokenContract = await rebalancerTokenContractFactory.deploy(
-      "RAaveWETH",
-      "RAWETH",
-      this.aWethContractAddress,
+      "RCompETH",
+      "RCETH",
+      this.cETHContractAddress,
       this.wethContractAddress
     );
 
-    const manageAaveFactory = await ethers.getContractFactory(
-      "ManageAave",
+    const manageCompFactory = await ethers.getContractFactory(
+      "ManageCompWETH",
       this.deployer
     );
-    this.manageAave = await manageAaveFactory.deploy(
-      this.aWethContractAddress,
+
+    this.manageComp = await manageCompFactory.deploy(
+      this.cETHContractAddress,
       this.rebalancerTokenContract.address,
-      this.poolProviderAddress
+      this.wethContractAddress
     );
 
-    // --Change ownership of rebalancer token--
     await this.rebalancerTokenContract.setAuthorised(
-      this.manageAave.address,
+      this.manageComp.address,
       true
     );
 
+    this.cETHContract = await ethers.getContractAt(
+      "ICETH",
+      this.cETHContractAddress,
+      this.deployer
+    );
+
     await this.rebalancerTokenContract.setManageProtocol(
-      this.manageAave.address
+      this.manageComp.address
     );
   });
 
-  describe("📈 getAPR()", () => {
+  describe("📈 getAPR()", async () => {
     it("returns APR of the protocol", async () => {
-      expect(await this.manageAave.getAPR()).to.be.greaterThan(0);
+      expect(await this.manageComp.getAPR()).to.be.greaterThan(0);
     });
   });
 
-  describe("🛠 Supply", () => {
+  describe("🛠 Supply", async () => {
     beforeEach(async () => {
-      await this.wethContract.approve(this.manageAave.address, AMOUNT);
-      await this.manageAave.supply(this.deployer.address, AMOUNT);
+      await this.wethContract.approve(this.manageComp.address, AMOUNT);
+      await this.manageComp.supply(this.deployer.address, AMOUNT);
     });
 
-    it("Rebalancer Token contract has Rebalancer tokens on a successful supply call", async () => {
-      const bal = await this.aWETHContract.balanceOf(
+    it("Rebalancer Token contract has protocol tokens on a successful supply call", async () => {
+      const bal = await this.cETHContract.balanceOf(
         this.rebalancerTokenContract.address
       );
-      const expectedAmt = bal * (await this.manageAave.getConversionRate());
+      const expectedAmt = bal * (await this.manageComp.getConversionRate());
       expect(expectedAmt).to.be.greaterThan(9 * 1e17);
     });
 
-    it("first supplier receives 1:1 Rebalancer tokens on a successful supply call", async () => {
+    it("first supplier receives 1:1 protocol tokens on a successful supply call", async () => {
       expect(
         await this.rebalancerTokenContract.balanceOf(this.deployer.address)
       ).to.be.equal(AMOUNT);
     });
 
-    it("supplier should receive scaled Rebalancer tokens when protocol tokens>1", async () => {
-      //Get 2 WETH into accounts[1]
+    it("supplier should receive scaled protocol tokens when protocol tokens>1", async () => {
       await addWETHToAccount(this.accounts[1], ethers.utils.parseEther("2"));
 
-      //Supply from accounts[1]
       await this.wethContract
         .connect(this.accounts[1])
-        .approve(this.manageAave.address, AMOUNT);
-      await this.manageAave
+        .approve(this.manageComp.address, AMOUNT);
+
+      await this.manageComp
         .connect(this.accounts[1])
         .supply(this.accounts[1].address, AMOUNT);
 
@@ -97,56 +98,47 @@ describe("Integration ManageAave contract", () => {
   });
 
   describe("Withdraw", () => {
-    //Supply first
     beforeEach(async () => {
-      await this.wethContract.approve(this.manageAave.address, AMOUNT);
-      await this.manageAave.supply(this.deployer.address, AMOUNT);
+      await this.wethContract.approve(this.manageComp.address, AMOUNT);
+      await this.manageComp.supply(this.deployer.address, AMOUNT);
       await this.rebalancerTokenContract.approve(
-        this.manageAave.address,
+        this.manageComp.address,
         AMOUNT
       );
     });
 
     it("caller receives more WETH than the amount supplied upon withdrawal", async () => {
-      await this.manageAave.withdraw(this.deployer.address, AMOUNT);
       //Initial WETH is 2, so user should have more than 2 WETH after withdrawing
+      await this.manageComp.withdraw(this.deployer.address, AMOUNT);
       expect(
         await this.wethContract.balanceOf(this.deployer.address)
       ).to.be.greaterThan(ethers.utils.parseEther("2"));
     });
 
     it("second caller receives more WETH than the amount supplied upon withdrawal", async () => {
-      //Get 2 WETH into accounts[1]
-      await addWETHToAccount(this.accounts[1], ethers.utils.parseEther("10"));
+      await addWETHToAccount(this.accounts[1], AMOUNT);
 
-      //Supply from accounts[1]
       await this.wethContract
         .connect(this.accounts[1])
-        .approve(this.manageAave.address, ethers.utils.parseEther("10"));
-      await this.manageAave
-        .connect(this.accounts[1])
-        .supply(this.accounts[1].address, ethers.utils.parseEther("10"));
+        .approve(this.manageComp.address, AMOUNT);
 
-      //Get balance
-      const bal = await this.rebalancerTokenContract.balanceOf(
-        this.accounts[1].address
-      );
+      await this.manageComp
+        .connect(this.accounts[1])
+        .supply(this.accounts[1].address, AMOUNT);
 
       await this.rebalancerTokenContract
         .connect(this.accounts[1])
-        .approve(this.manageAave.address, bal);
+        .approve(this.manageComp.address, AMOUNT);
 
-      await this.manageAave
+      await this.manageComp
         .connect(this.accounts[1])
-        .withdraw(this.accounts[1].address, bal);
+        .withdraw(this.accounts[1].address, AMOUNT);
 
       expect(
         await this.wethContract.balanceOf(this.accounts[1].address)
-      ).to.be.greaterThan(ethers.utils.parseEther("10"));
+      ).to.be.greaterThan(AMOUNT);
 
-      //Caller 1 withdraws
-      await this.manageAave.withdraw(this.deployer.address, AMOUNT);
-      //Initial WETH is 2, so user should have more than 2 WETH after withdrawing
+      await this.manageComp.withdraw(this.deployer.address, AMOUNT);
       expect(
         await this.wethContract.balanceOf(this.deployer.address)
       ).to.be.greaterThan(ethers.utils.parseEther("2"));

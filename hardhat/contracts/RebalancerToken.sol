@@ -15,7 +15,8 @@ contract RebalancerToken is ERC20, Ownable {
     address private _pToken;
     //Underlying asset e.g., WETH
     address private _underlying;
-    address private _deployer;
+    address private _manageProtocol;
+    mapping(address => bool) _authorised;
 
     constructor(
         string memory name,
@@ -25,7 +26,12 @@ contract RebalancerToken is ERC20, Ownable {
     ) ERC20(name, symbol) {
         _pToken = pToken;
         _underlying = underlying;
-        _deployer = msg.sender;
+        _authorised[msg.sender] = true;
+    }
+
+    modifier onlyAuthorised() {
+        require(_authorised[msg.sender] == true, "Unauthorised");
+        _;
     }
 
     function getpToken() public view returns (address) {
@@ -36,12 +42,29 @@ contract RebalancerToken is ERC20, Ownable {
         return _underlying;
     }
 
-    function setpToken(address pToken) public onlyOwner {
+    function getAuthorised(address entity) public view returns (bool) {
+        return _authorised[entity];
+    }
+
+    function getManageProtocol() public view returns (address) {
+        return _manageProtocol;
+    }
+
+    function setpToken(address pToken) public onlyAuthorised {
         _pToken = pToken;
     }
 
-    function setUnderlying(address underlying) public onlyOwner {
+    function setUnderlying(address underlying) public onlyAuthorised {
         _underlying = underlying;
+    }
+
+    function setAuthorised(address entity, bool authorised) public onlyOwner {
+        _authorised[entity] = authorised;
+    }
+
+    function setManageProtocol(address manageProtocol) public onlyAuthorised {
+        _manageProtocol = manageProtocol;
+        _pToken = ILendingProtocolCore(manageProtocol).getpToken();
     }
 
     //Conversion rate of Rebalancer Token to the amount of _pToken held by this
@@ -52,25 +75,30 @@ contract RebalancerToken is ERC20, Ownable {
     }
 
     function _getConversionRate() private view returns (uint256) {
-        require(owner() != _deployer, "Transfer ownership");
-        return ILendingProtocolCore(owner()).getConversionRate();
+        require(
+            _manageProtocol != address(0),
+            "Manage Protocol is not defined"
+        );
+        return ILendingProtocolCore(_manageProtocol).getConversionRate();
     }
 
     /// Get Rebalancer Token price in underlying asset. e.g., 5 Rebalancer token == 5 WETH
     function getRebalancerPrice() public view virtual returns (uint256 price) {
-        uint256 conversionRate = _getConversionRate();
-
-        price = (rToPtokenConversionRate() * conversionRate); //Price in underlying asset
+        price = ((rToPtokenConversionRate() * _getConversionRate())); //Price in underlying asset
+        if (_getConversionRate() != 1) price /= 1e18;
     }
 
     //Mint Rebalancer Tokens based on its price
     /// @param account the end user aka tx.origin
-    function mintRTokens(address account, uint256 amount) external onlyOwner {
+    function mintRTokens(
+        address account,
+        uint256 amount
+    ) external onlyAuthorised {
         require(amount > 0, "Invalid amount");
         uint256 mintAmount;
         if (totalSupply() != 0) {
             //msg.sender will be the pool contract
-            mintAmount = (amount * (1e18)) / getRebalancerPrice();
+            mintAmount = (amount * 1e18) / getRebalancerPrice();
         } else if (totalSupply() == 0) {
             mintAmount = amount;
         }
@@ -82,19 +110,17 @@ contract RebalancerToken is ERC20, Ownable {
     function withdrawRTokens(
         address account,
         uint256 amount
-    ) external virtual onlyOwner returns (uint256) {
+    ) external virtual onlyAuthorised returns (uint256) {
         require(totalSupply() > 0 && amount > 0, "No token to withdraw");
         //Convert rebalancerToken to protocol Tokens
-        console.log("From RebalancerToken.sol");
         uint256 amt = amount * rToPtokenConversionRate();
-        console.log("rToPtokenConversionRate:", rToPtokenConversionRate());
-        console.log("amt: ", amt);
         uint256 amtOfPTokens = amt / 1e18;
 
-        console.log("amtofPTokens:", amtOfPTokens);
         _burn(account, amount);
+        address currentBest = ILendingProtocolCore(_manageProtocol)
+            .getCurrentBest();
         require(
-            IERC20(_pToken).transfer(owner(), amtOfPTokens),
+            IERC20(_pToken).transfer(currentBest, amtOfPTokens),
             "Transfer failed"
         );
         return amtOfPTokens;
