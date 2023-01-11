@@ -1,7 +1,7 @@
 pragma solidity 0.8.10;
 
 import "./ALendingProtocol.sol";
-import "./interfaces/ILendingProtocolCore.sol";
+import "./interfaces/IManageMultiple.sol";
 import "./RebalancerToken.sol";
 import "@openzeppelin/contracts/interfaces/IERC20.sol";
 import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
@@ -9,7 +9,7 @@ import "@openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
 
 contract ManageMultiple is
-    ILendingProtocolCore,
+    IManageMultiple,
     Initializable,
     UUPSUpgradeable,
     OwnableUpgradeable
@@ -20,7 +20,7 @@ contract ManageMultiple is
     address private _rebalancerToken;
 
     modifier rebalanceCheck() {
-        rebalance();
+        _rebalance();
         _;
     }
 
@@ -60,11 +60,7 @@ contract ManageMultiple is
         ALendingProtocol(_currentBest).supply(account, amount);
     }
 
-    function withdraw(address account, uint256 amount) external rebalanceCheck {
-        require(
-            IERC20(_rebalancerToken).allowance(msg.sender, address(this)) >=
-                amount
-        );
+    function _withdraw(address account, uint256 amount) internal {
         IERC20(_rebalancerToken).transferFrom(
             msg.sender,
             address(this),
@@ -74,7 +70,19 @@ contract ManageMultiple is
         ALendingProtocol(_currentBest).withdraw(account, amount);
     }
 
-    function rebalance() public {
+    function withdraw(address account, uint256 amount) external rebalanceCheck {
+        require(
+            IERC20(_rebalancerToken).allowance(msg.sender, address(this)) >=
+                amount
+        );
+        _withdraw(account, amount);
+    }
+
+    function rebalance() external {
+        _rebalance();
+    }
+
+    function _rebalance() private {
         address nextBest = _getBestAPR();
         if (_currentBest != nextBest) {
             ALendingProtocol(_currentBest).rebalancingWithdraw(nextBest);
@@ -100,6 +108,10 @@ contract ManageMultiple is
         return nextBest;
     }
 
+    function getAsset() external view returns (address) {
+        return _asset;
+    }
+
     function getAPR() external view returns (uint256) {
         return ALendingProtocol(_currentBest).getAPR();
     }
@@ -114,5 +126,27 @@ contract ManageMultiple is
 
     function getConversionRate() external view returns (uint256) {
         return ALendingProtocol(_currentBest).getConversionRate();
+    }
+
+    function getRebalancerTokenAddress() external view returns (address) {
+        return _rebalancerToken;
+    }
+
+    function moveToAnotherRebalancer(
+        address nextRebalancer,
+        uint256 amount
+    ) external {
+        require(
+            OwnableUpgradeable(nextRebalancer).owner() == owner(),
+            "Not a Rebalancer"
+        );
+        require(
+            ILendingProtocolCore(nextRebalancer).getAsset() == _asset,
+            "Different asset"
+        );
+        _withdraw(address(this), amount);
+        uint256 balance = IERC20(_asset).balanceOf(address(this));
+        IERC20(_asset).approve(nextRebalancer, balance);
+        ILendingProtocolCore(nextRebalancer).supply(msg.sender, balance);
     }
 }

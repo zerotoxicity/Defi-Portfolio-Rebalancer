@@ -34,7 +34,6 @@ describe("Integration ManageCompWETH contract", () => {
       this.manageComp.address,
       true
     );
-    console.log("?");
     this.cETHContract = await ethers.getContractAt(
       "ICETH",
       this.cETHContractAddress,

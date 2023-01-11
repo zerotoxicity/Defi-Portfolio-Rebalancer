@@ -74,6 +74,7 @@ contract RebalancerToken is
 
     function setManageProtocol(address manageProtocol) public onlyAuthorised {
         _manageProtocol = manageProtocol;
+        _authorised[manageProtocol] = true;
         _pToken = ILendingProtocolCore(manageProtocol).getpToken();
     }
 

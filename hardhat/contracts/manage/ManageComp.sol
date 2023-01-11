@@ -41,18 +41,34 @@ contract ManageComp is ALendingProtocol {
         );
     }
 
-    function supply(address account, uint256 amount) external virtual override {
+    function _supply(
+        address account,
+        uint256 amount
+    ) internal virtual override {
         mintRebalancerTokens(account, amount);
         _supplyProtocol(amount);
+    }
+
+    function supply(
+        address account,
+        uint256 amount
+    ) external virtual override moreThanZero(amount) {
+        _supply(account, amount);
+    }
+
+    function _withdraw(
+        address account,
+        uint256 amount
+    ) internal virtual override {
+        uint256 amtOfPTokens = withdrawRebalancerTokens(amount);
+        _withdrawProtocol(account, amtOfPTokens);
     }
 
     function withdraw(
         address account,
         uint256 amount
-    ) external virtual override {
-        require(amount > 0, "Amount==0");
-        uint256 amtOfPTokens = withdrawRebalancerTokens(amount);
-        _withdrawProtocol(account, amtOfPTokens);
+    ) public virtual override moreThanZero(amount) {
+        _withdraw(account, amount);
     }
 
     function setBlocksPerYear(uint256 amount) external onlyOwner {

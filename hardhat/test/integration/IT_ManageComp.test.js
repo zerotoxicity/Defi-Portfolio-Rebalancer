@@ -37,10 +37,6 @@ describe("Integration ManageComp contract", () => {
       this.daiTokenAddress,
     ]);
 
-    await this.rebalancerTokenContract.setAuthorised(
-      this.manageComp.address,
-      true
-    );
     await this.rebalancerTokenContract.setManageProtocol(
       this.manageComp.address
     );

@@ -40,21 +40,29 @@ contract ManageCompWETH is ManageComp {
         IWETH(_asset).transfer(account, expectedValue);
     }
 
+    function _supply(address account, uint256 amount) internal override {
+        mintRebalancerTokens(account, amount);
+        _supplyProtocol(amount);
+    }
+
     // Convert WETH to ETH then deposit
     function supply(
         address account,
         uint256 amount
     ) external override moreThanZero(amount) {
-        mintRebalancerTokens(account, amount);
-        _supplyProtocol(amount);
+        _supply(account, amount);
+    }
+
+    function _withdraw(address account, uint256 amount) internal override {
+        uint256 amtOfPTokens = withdrawRebalancerTokens(amount);
+        _withdrawProtocol(account, amtOfPTokens);
     }
 
     //Convert CETH -> ETH -> WETH
     function withdraw(
         address account,
         uint256 amount
-    ) external override moreThanZero(amount) {
-        uint256 amtOfPTokens = withdrawRebalancerTokens(amount);
-        _withdrawProtocol(account, amtOfPTokens);
+    ) public override moreThanZero(amount) {
+        _withdraw(account, amount);
     }
 }

@@ -39,9 +39,26 @@ describe("Manage Multiple contract", () => {
       );
     });
   });
+
+  describe("getAsset()", () => {
+    it("returns asset", async () => {
+      expect(await this.manageMultiple.getAsset()).to.be.equal(
+        this.fakeWeth.address
+      );
+    });
+  });
+
   describe("📈 getAPR()", () => {
     it("returns current APR", async () => {
       expect(await this.manageMultiple.getAPR()).to.be.equal(2);
+    });
+  });
+
+  describe("getRebalancerTokenAddress", () => {
+    it("returns Rebalancer token address", async () => {
+      expect(await this.manageMultiple.getRebalancerTokenAddress()).to.be.equal(
+        this.fakeRebalancer.address
+      );
     });
   });
   describe("Rebalance", () => {

@@ -204,6 +204,114 @@ describe("Integration Test ManageMultiple Contract", () => {
     });
   });
 
+  describe("moveToAnotherRebalancer", () => {
+    beforeEach(async () => {
+      await this.wethContract.approve(this.manageMultiple.address, AMOUNT);
+      await this.manageMultiple.supply(this.deployer.address, AMOUNT);
+      await this.rebalancerTokenContract.approve(
+        this.manageMultiple.address,
+        AMOUNT
+      );
+    });
+
+    it("fails when it is not deployed by the same owner", async () => {
+      this.rebalancerTokenContract2 = await deployContract("RebalancerToken", [
+        "RCompETH",
+        "RCETH",
+        this.cETHContractAddress,
+        this.wethContractAddress,
+      ]);
+
+      const contractFactory = await ethers.getContractFactory(
+        "ManageCompWETH",
+        this.accounts[1]
+      );
+      this.manageComp2 = await upgrades.deployProxy(
+        contractFactory,
+        [
+          this.cETHContractAddress,
+          this.rebalancerTokenContract2.address,
+          this.wethContractAddress,
+        ],
+        {
+          kind: "uups",
+        }
+      );
+      await this.rebalancerTokenContract2.setManageProtocol(
+        this.manageComp2.address
+      );
+
+      await expect(
+        this.manageMultiple.moveToAnotherRebalancer(
+          this.manageComp2.address,
+          AMOUNT
+        )
+      ).to.be.reverted;
+    });
+
+    it("fails when the other rebalancer is of another asset", async () => {
+      this.daiTokenAddress = networkConfig[network.config.chainId].DAIToken;
+      this.cDAITokenAddress = networkConfig[network.config.chainId].cDAIToken;
+
+      this.rebalancerTokenContract2 = await deployContract("RebalancerToken", [
+        "RCompDAI",
+        "RCDAI",
+        this.cDAITokenAddress,
+        this.daiTokenAddress,
+      ]);
+
+      this.manageComp2 = await deployContract("ManageComp", [
+        this.cDAITokenAddress,
+        this.rebalancerTokenContract2.address,
+        this.daiTokenAddress,
+      ]);
+
+      await this.rebalancerTokenContract2.setManageProtocol(
+        this.manageComp2.address
+      );
+
+      await expect(
+        this.manageMultiple.moveToAnotherRebalancer(
+          this.manageComp2.address,
+          AMOUNT
+        )
+      ).to.be.reverted;
+    });
+
+    it("moves successfully to another Rebalancer", async () => {
+      this.rebalancerTokenContract2 = await deployContract("RebalancerToken", [
+        "RAaveWETH",
+        "RAWETH",
+        this.aWethContractAddress,
+        this.wethContractAddress,
+      ]);
+
+      this.manageAave2 = await deployContract("ManageAave", [
+        this.aWethContractAddress,
+        this.rebalancerTokenContract2.address,
+        this.poolProviderAddress,
+      ]);
+
+      await this.rebalancerTokenContract2.setManageProtocol(
+        this.manageAave2.address
+      );
+
+      await this.manageMultiple.moveToAnotherRebalancer(
+        this.manageAave2.address,
+        AMOUNT
+      );
+      expect(
+        await this.rebalancerTokenContract2.balanceOf(this.deployer.address)
+      ).to.be.greaterThan(0);
+
+      const aWETHContract = await getAWETHContract();
+
+      expect(
+        await aWETHContract.balanceOf(this.rebalancerTokenContract2.address)
+      ).to.be.greaterThan(0);
+    });
+  });
+
   describe("ALendingProtocol", () => {
     it("reverts when not called by owner", async () => {
       await expect(

@@ -10,6 +10,7 @@ const {
 } = require("../helpers/testHelper");
 const { getAWETHContract } = require("../helpers/aaveHelper");
 
+this.cETHContractAddress = networkConfig[network.config.chainId].cETHToken;
 this.wethContractAddress = networkConfig[network.config.chainId].WETHToken;
 this.aWethContractAddress = networkConfig[network.config.chainId].aWETHToken;
 this.poolProviderAddress =
@@ -36,12 +37,6 @@ describe("Integration ManageAave contract", () => {
       this.rebalancerTokenContract.address,
       this.poolProviderAddress,
     ]);
-
-    // --Change ownership of rebalancer token--
-    await this.rebalancerTokenContract.setAuthorised(
-      this.manageAave.address,
-      true
-    );
 
     await this.rebalancerTokenContract.setManageProtocol(
       this.manageAave.address
@@ -148,6 +143,118 @@ describe("Integration ManageAave contract", () => {
       expect(
         await this.wethContract.balanceOf(this.deployer.address)
       ).to.be.greaterThan(ethers.utils.parseEther("2"));
+    });
+  });
+
+  describe("moveToAnotherRebalancer", () => {
+    beforeEach(async () => {
+      await this.wethContract.approve(this.manageAave.address, AMOUNT);
+      await this.manageAave.supply(this.deployer.address, AMOUNT);
+      await this.rebalancerTokenContract.approve(
+        this.manageAave.address,
+        AMOUNT
+      );
+    });
+
+    it("fails when it is not deployed by the same owner", async () => {
+      this.rebalancerTokenContract2 = await deployContract("RebalancerToken", [
+        "RCompETH",
+        "RCETH",
+        this.cETHContractAddress,
+        this.wethContractAddress,
+      ]);
+
+      const contractFactory = await ethers.getContractFactory(
+        "ManageCompWETH",
+        this.accounts[1]
+      );
+      this.manageComp = await upgrades.deployProxy(
+        contractFactory,
+        [
+          this.cETHContractAddress,
+          this.rebalancerTokenContract2.address,
+          this.wethContractAddress,
+        ],
+        {
+          kind: "uups",
+        }
+      );
+      await this.rebalancerTokenContract2.setAuthorised(
+        this.manageComp.address,
+        true
+      );
+
+      await expect(
+        this.manageAave.moveToAnotherRebalancer(this.manageComp.address, AMOUNT)
+      ).to.be.reverted;
+    });
+
+    it("fails when the other rebalancer is of another asset", async () => {
+      this.daiTokenAddress = networkConfig[network.config.chainId].DAIToken;
+      this.cDAITokenAddress = networkConfig[network.config.chainId].cDAIToken;
+
+      this.rebalancerTokenContract2 = await deployContract("RebalancerToken", [
+        "RCompDAI",
+        "RCDAI",
+        this.cDAITokenAddress,
+        this.daiTokenAddress,
+      ]);
+
+      this.manageComp = await deployContract("ManageComp", [
+        this.cDAITokenAddress,
+        this.rebalancerTokenContract2.address,
+        this.daiTokenAddress,
+      ]);
+
+      await this.rebalancerTokenContract.setManageProtocol(
+        this.manageComp.address
+      );
+
+      await expect(
+        this.manageAave.moveToAnotherRebalancer(this.manageComp.address, AMOUNT)
+      ).to.be.reverted;
+    });
+
+    it("moves successfully to another Rebalancer", async () => {
+      this.rebalancerTokenContract2 = await deployContract("RebalancerToken", [
+        "RCompETH",
+        "RCETH",
+        this.cETHContractAddress,
+        this.wethContractAddress,
+      ]);
+      this.manageComp = await deployContract("ManageCompWETH", [
+        this.cETHContractAddress,
+        this.rebalancerTokenContract2.address,
+        this.wethContractAddress,
+      ]);
+
+      await this.rebalancerTokenContract2.setManageProtocol(
+        this.manageComp.address
+      );
+
+      this.cETHContract = await ethers.getContractAt(
+        "ICETH",
+        this.cETHContractAddress,
+        this.deployer
+      );
+
+      await this.rebalancerTokenContract2.setManageProtocol(
+        this.manageComp.address
+      );
+
+      await this.manageAave.moveToAnotherRebalancer(
+        this.manageComp.address,
+        AMOUNT
+      );
+      expect(
+        await this.rebalancerTokenContract.balanceOf(this.deployer.address)
+      ).to.be.equal(0);
+      expect(
+        await this.rebalancerTokenContract2.balanceOf(this.deployer.address)
+      ).to.be.greaterThan(0);
+      expect(
+        await this.cETHContract.balanceOf(this.rebalancerTokenContract2.address)
+      ).to.be.greaterThan(0);
     });
   });
 });

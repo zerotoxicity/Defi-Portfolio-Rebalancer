@@ -1,6 +1,7 @@
 pragma solidity 0.8.10;
 
 import "./interfaces/ILendingProtocolCore.sol";
+import "./interfaces/IALendingProtocol.sol";
 import "./interfaces/IRebalancerToken.sol";
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
@@ -8,10 +9,10 @@ import "@openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
 
 abstract contract ALendingProtocol is
+    IALendingProtocol,
     Initializable,
     UUPSUpgradeable,
-    OwnableUpgradeable,
-    ILendingProtocolCore
+    OwnableUpgradeable
 {
     //aToken e.g., aWETH
     address internal _pToken;
@@ -65,6 +66,10 @@ abstract contract ALendingProtocol is
 
     function _authorizeUpgrade(address) internal override onlyOwner {}
 
+    function _supply(address account, uint256 amount) internal virtual;
+
+    function _withdraw(address account, uint256 amount) internal virtual;
+
     function _supplyProtocol(uint256 amount) internal virtual;
 
     function _withdrawProtocol(
@@ -76,7 +81,7 @@ abstract contract ALendingProtocol is
         return _rebalancerToken;
     }
 
-    function getAsset() external view returns (address) {
+    function getAsset() public view returns (address) {
         return _asset;
     }
 
@@ -102,7 +107,7 @@ abstract contract ALendingProtocol is
 
     function withdrawRebalancerTokens(
         uint256 amount
-    ) public allowanceCheck(amount, false) returns (uint256) {
+    ) internal allowanceCheck(amount, false) returns (uint256) {
         IERC20(_rebalancerToken).transferFrom(
             msg.sender,
             address(this),
@@ -125,5 +130,23 @@ abstract contract ALendingProtocol is
 
     function rebalancingWithdraw(address nextBest) external onlyRebalancer {
         _withdrawProtocol(nextBest, IERC20(_pToken).balanceOf(address(this)));
+    }
+
+    function moveToAnotherRebalancer(
+        address nextRebalancer,
+        uint256 amount
+    ) external {
+        require(
+            OwnableUpgradeable(nextRebalancer).owner() == owner(),
+            "Not a Rebalancer"
+        );
+        require(
+            ILendingProtocolCore(nextRebalancer).getAsset() == _asset,
+            "Different asset"
+        );
+        _withdraw(address(this), amount);
+        uint256 balance = IERC20(_asset).balanceOf(address(this));
+        IERC20(_asset).approve(nextRebalancer, balance);
+        ILendingProtocolCore(nextRebalancer).supply(msg.sender, balance);
     }
 }

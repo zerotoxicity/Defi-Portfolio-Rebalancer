@@ -48,20 +48,31 @@ contract ManageAave is ALendingProtocol {
         ILendingPool(poolAddr).withdraw(_asset, amount, account);
     }
 
+    function _supply(
+        address account,
+        uint256 amount
+    ) internal override moreThanZero(amount) {
+        mintRebalancerTokens(account, amount);
+        _supplyProtocol(amount);
+    }
+
     function supply(
         address account,
         uint256 amount
     ) external override moreThanZero(amount) {
-        mintRebalancerTokens(account, amount);
-        _supplyProtocol(amount);
+        _supply(account, amount);
+    }
+
+    function _withdraw(address account, uint256 amount) internal override {
+        uint256 amtOfPTokens = withdrawRebalancerTokens(amount);
+        _withdrawProtocol(account, amtOfPTokens);
     }
 
     function withdraw(
         address account,
         uint256 amount
-    ) external override moreThanZero(amount) {
-        uint256 amtOfPTokens = withdrawRebalancerTokens(amount);
-        _withdrawProtocol(account, amtOfPTokens);
+    ) public override moreThanZero(amount) {
+        _withdraw(account, amount);
     }
 
     function getAPR() external view override returns (uint256) {
