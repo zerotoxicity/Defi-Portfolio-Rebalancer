@@ -1,7 +1,7 @@
 const chai = require("chai");
 const { expect } = chai;
 const { ethers, network } = require("hardhat");
-const { networkConfig } = require("../helper-hardhat-config");
+const { networkConfig } = require("../../helper-hardhat-config");
 const {
   deployContract,
   getWeth,
@@ -30,18 +30,15 @@ describe("Integration ManageCompWETH contract", () => {
       this.rebalancerTokenContract.address,
       this.wethContractAddress,
     ]);
-    await this.rebalancerTokenContract.setAuthorised(
-      this.manageComp.address,
-      true
+
+    await this.rebalancerTokenContract.setManageProtocol(
+      this.manageComp.address
     );
+
     this.cETHContract = await ethers.getContractAt(
       "ICETH",
       this.cETHContractAddress,
       this.deployer
-    );
-
-    await this.rebalancerTokenContract.setManageProtocol(
-      this.manageComp.address
     );
   });
 

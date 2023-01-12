@@ -1,7 +1,7 @@
 const chai = require("chai");
 const { expect } = chai;
 const { ethers, network } = require("hardhat");
-const { networkConfig } = require("../helper-hardhat-config");
+const { networkConfig } = require("../../helper-hardhat-config");
 const {
   AMOUNT,
   addDaiToAccount,
@@ -18,7 +18,7 @@ describe("Integration ManageComp contract", () => {
     this.deployer = this.accounts[0];
 
     this.daiContract = await ethers.getContractAt(
-      "IDAI",
+      "IERC20",
       networkConfig[network.config.chainId].DAIToken,
       this.deployer
     );
@@ -45,7 +45,7 @@ describe("Integration ManageComp contract", () => {
     await addDaiToAccount(this.deployer, AMOUNT);
 
     this.daiContract = await ethers.getContractAt(
-      "IDAI",
+      "IERC20",
       networkConfig[network.config.chainId].DAIToken,
       this.deployer
     );

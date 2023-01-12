@@ -1,5 +1,5 @@
 const { ethers, network, upgrades } = require("hardhat");
-const { networkConfig } = require("../helper-hardhat-config");
+const { networkConfig } = require("../../helper-hardhat-config");
 
 //Amount to convert to WETH
 const AMOUNT = ethers.utils.parseEther("1");

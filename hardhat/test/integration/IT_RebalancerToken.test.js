@@ -1,7 +1,7 @@
 const chai = require("chai");
 const { expect } = chai;
 const { ethers, network } = require("hardhat");
-const { networkConfig } = require("../helper-hardhat-config");
+const { networkConfig } = require("../../helper-hardhat-config");
 const {
   getWeth,
   AMOUNT,

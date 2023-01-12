@@ -34,6 +34,6 @@
   },
   "scripts": {
     "solhint": "./node_modules/.bin/solhint -f table contracts/**/*.sol",
-    "runScript": "hardhat run scripts/main.js"
+    "deploy": "yarn hardhat run scripts/deploy.js"
   }
 }

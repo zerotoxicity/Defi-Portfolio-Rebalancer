@@ -1,5 +1,5 @@
 const { ethers, network } = require("hardhat");
-const { networkConfig } = require("../helper-hardhat-config");
+const { networkConfig } = require("../../helper-hardhat-config");
 
 //Get AAVE v2 pool address
 async function getLendingPoolContract(account) {
