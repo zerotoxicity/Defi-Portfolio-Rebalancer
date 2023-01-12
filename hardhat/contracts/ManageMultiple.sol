@@ -1,6 +1,6 @@
 pragma solidity 0.8.10;
 
-import "./ALendingProtocol.sol";
+import "./interfaces/IALendingProtocol.sol";
 import "./interfaces/IManageMultiple.sol";
 import "./RebalancerToken.sol";
 import "@openzeppelin/contracts/interfaces/IERC20.sol";
@@ -28,9 +28,9 @@ contract ManageMultiple is
         __UUPSUpgradeable_init();
         __Ownable_init();
         _manageProtocols = manageProtocols;
-        _rebalancerToken = ALendingProtocol(manageProtocols[0])
+        _rebalancerToken = IALendingProtocol(manageProtocols[0])
             .getRebalancerTokenAddress();
-        _asset = ALendingProtocol(manageProtocols[0]).getAsset();
+        _asset = IALendingProtocol(manageProtocols[0]).getAsset();
 
         uint256 currentBestAPR;
         uint256 index;
@@ -42,7 +42,7 @@ contract ManageMultiple is
                 type(uint256).max
             );
 
-            uint256 currAPR = ALendingProtocol(manageProtocols[i]).getAPR();
+            uint256 currAPR = IALendingProtocol(manageProtocols[i]).getAPR();
             if (currAPR > currentBestAPR) {
                 currentBestAPR = currAPR;
                 index = i;
@@ -57,7 +57,7 @@ contract ManageMultiple is
     function supply(address account, uint256 amount) external rebalanceCheck {
         require(IERC20(_asset).allowance(msg.sender, address(this)) >= amount);
         IERC20(_asset).transferFrom(msg.sender, address(this), amount);
-        ALendingProtocol(_currentBest).supply(account, amount);
+        IALendingProtocol(_currentBest).supply(account, amount);
     }
 
     function _withdraw(address account, uint256 amount) internal {
@@ -67,7 +67,7 @@ contract ManageMultiple is
             amount
         );
 
-        ALendingProtocol(_currentBest).withdraw(account, amount);
+        IALendingProtocol(_currentBest).withdraw(account, amount);
     }
 
     function withdraw(address account, uint256 amount) external rebalanceCheck {
@@ -85,10 +85,14 @@ contract ManageMultiple is
     function _rebalance() private {
         address nextBest = _getBestAPR();
         if (_currentBest != nextBest) {
-            ALendingProtocol(_currentBest).rebalancingWithdraw(nextBest);
-            ALendingProtocol(nextBest).rebalancingSupply();
+            address pToken = IALendingProtocol(_currentBest).getpToken();
+            uint256 bal = IERC20(pToken).balanceOf(_rebalancerToken);
+            if (bal > 0) {
+                IALendingProtocol(_currentBest).rebalancingWithdraw(nextBest);
+                IALendingProtocol(nextBest).rebalancingSupply();
+            }
             IRebalancerToken(_rebalancerToken).setpToken(
-                ALendingProtocol(nextBest).getpToken()
+                IALendingProtocol(nextBest).getpToken()
             );
             _currentBest = nextBest;
         }
@@ -96,9 +100,9 @@ contract ManageMultiple is
 
     function _getBestAPR() private view returns (address) {
         address nextBest = _currentBest;
-        uint256 currentBestAPR = ALendingProtocol(_currentBest).getAPR();
+        uint256 currentBestAPR = IALendingProtocol(_currentBest).getAPR();
         for (uint i = 0; i < _manageProtocols.length; i++) {
-            uint256 currentIterationAPR = ALendingProtocol(_manageProtocols[i])
+            uint256 currentIterationAPR = IALendingProtocol(_manageProtocols[i])
                 .getAPR();
             if (currentIterationAPR > currentBestAPR) {
                 nextBest = _manageProtocols[i];
@@ -113,11 +117,11 @@ contract ManageMultiple is
     }
 
     function getAPR() external view returns (uint256) {
-        return ALendingProtocol(_currentBest).getAPR();
+        return IALendingProtocol(_currentBest).getAPR();
     }
 
     function getpToken() external view returns (address) {
-        return ALendingProtocol(_currentBest).getpToken();
+        return IALendingProtocol(_currentBest).getpToken();
     }
 
     function getCurrentBest() external view returns (address) {
@@ -125,7 +129,7 @@ contract ManageMultiple is
     }
 
     function getConversionRate() external view returns (uint256) {
-        return ALendingProtocol(_currentBest).getConversionRate();
+        return IALendingProtocol(_currentBest).getConversionRate();
     }
 
     function getRebalancerTokenAddress() external view returns (address) {

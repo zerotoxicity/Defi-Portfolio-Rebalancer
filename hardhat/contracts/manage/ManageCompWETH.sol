@@ -21,12 +21,9 @@ contract ManageCompWETH is ManageComp {
     function _supplyProtocol(uint256 amount) internal override {
         IWETH(_asset).withdraw(amount);
         ICETH(_pToken).mint{value: amount}();
-        require(
-            ICETH(_pToken).transfer(
-                _rebalancerToken,
-                ICETH(_pToken).balanceOf(address(this))
-            ),
-            "Transfer failed"
+        bool temp = ICETH(_pToken).transfer(
+            _rebalancerToken,
+            ICETH(_pToken).balanceOf(address(this))
         );
     }
 
@@ -34,7 +31,7 @@ contract ManageCompWETH is ManageComp {
         address account,
         uint256 amount
     ) internal override {
-        require(ICETH(_pToken).redeem(amount) == 0, "Withdrawal failed");
+        uint256 temp = ICETH(_pToken).redeem(amount);
         uint256 expectedValue = address(this).balance;
         IWETH(_asset).deposit{value: expectedValue}();
         IWETH(_asset).transfer(account, expectedValue);

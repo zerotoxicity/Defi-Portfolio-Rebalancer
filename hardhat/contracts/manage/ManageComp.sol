@@ -23,8 +23,8 @@ contract ManageComp is ALendingProtocol {
     }
 
     function _supplyProtocol(uint256 amount) internal virtual override {
-        require(ICToken(_pToken).mint(amount) == 0, "Error minting COMP");
-        ICToken(_pToken).transfer(
+        uint256 temp = ICToken(_pToken).mint(amount);
+        bool t = ICToken(_pToken).transfer(
             _rebalancerToken,
             IERC20(_pToken).balanceOf(address(this))
         );
@@ -34,7 +34,7 @@ contract ManageComp is ALendingProtocol {
         address account,
         uint256 amount
     ) internal virtual override {
-        require(ICToken(_pToken).redeem(amount) == 0, "Error redeeming COMP");
+        uint256 temp = ICToken(_pToken).redeem(amount);
         IERC20(_asset).transfer(
             account,
             IERC20(_asset).balanceOf(address(this))
