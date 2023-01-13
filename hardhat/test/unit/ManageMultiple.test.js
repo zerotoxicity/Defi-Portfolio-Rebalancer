@@ -55,6 +55,42 @@ describe("Manage Multiple contract", () => {
     });
   });
 
+  describe("Supply", () => {
+    it("reverts when user did not approve the contract on asset contract", async () => {
+      this.fakeWeth.allowance.returns(0);
+      await expect(this.manageMultiple.supply(this.accounts[0].address, 1)).to
+        .be.reverted;
+    });
+    it("reverts when user did not approve enough allowance", async () => {
+      this.fakeWeth.allowance.returns(1);
+      await expect(this.manageMultiple.supply(this.accounts[0].address, 2)).to
+        .be.reverted;
+    });
+    it("success when user approve enough allowance", async () => {
+      this.fakeWeth.allowance.returns(3);
+      await expect(this.manageMultiple.supply(this.accounts[0].address, 2)).to
+        .not.be.reverted;
+    });
+  });
+
+  describe("Withdraw", () => {
+    it("reverts when user did not approve the contract on Rebalancer token contract", async () => {
+      this.fakeRebalancer.allowance.returns(0);
+      await expect(this.manageMultiple.withdraw(this.accounts[0].address, 1)).to
+        .be.reverted;
+    });
+    it("reverts when user did not approve enough allowance", async () => {
+      this.fakeRebalancer.allowance.returns(1);
+      await expect(this.manageMultiple.withdraw(this.accounts[0].address, 2)).to
+        .be.reverted;
+    });
+    it("success when user approve enough allowance", async () => {
+      this.fakeRebalancer.allowance.returns(3);
+      await expect(this.manageMultiple.withdraw(this.accounts[0].address, 2)).to
+        .not.be.reverted;
+    });
+  });
+
   describe("getRebalancerTokenAddress", () => {
     it("returns Rebalancer token address", async () => {
       expect(await this.manageMultiple.getRebalancerTokenAddress()).to.be.equal(
@@ -64,20 +100,58 @@ describe("Manage Multiple contract", () => {
   });
   describe("Rebalance", () => {
     it("does not occur when there's no protocol with a bigger APR", async () => {
-      await this.manageMultiple.rebalance();
       this.fakeWeth.balanceOf.returns(0);
 
-      expect(this.fakeManageComp.rebalancingWithdraw).to.have.callCount(0);
+      await this.manageMultiple.rebalance();
+
+      expect(this.fakeManageComp.getpToken).to.have.callCount(0);
 
       expect(await this.manageMultiple.getCurrentBest()).to.be.equal(
         this.fakeManageComp.address
       );
     });
+
+    it("does not occur when the contract does not hold any protocol token", async () => {
+      this.fakeManageAave.getAPR.returns(2);
+      this.fakeManageComp.getAPR.returns(1);
+
+      this.fakeManageComp.getpToken.returns(this.fakeCETH.address);
+      this.fakeCETH.balanceOf.returns(0);
+      this.fakeRebalancer.totalSupply.returns(1);
+
+      await this.manageMultiple.rebalance();
+
+      expect(this.fakeManageComp.getpToken).to.have.callCount(1);
+      expect(this.fakeManageComp.rebalancingWithdraw).to.have.callCount(0);
+      expect(await this.manageMultiple.getCurrentBest()).to.be.equal(
+        this.fakeManageAave.address
+      );
+    });
+
+    it("does not occur when no Rebalancer has been minted", async () => {
+      this.fakeManageAave.getAPR.returns(2);
+      this.fakeManageComp.getAPR.returns(1);
+
+      this.fakeManageComp.getpToken.returns(this.fakeCETH.address);
+      this.fakeCETH.balanceOf.returns(1);
+      this.fakeRebalancer.totalSupply.returns(0);
+
+      await this.manageMultiple.rebalance();
+
+      expect(this.fakeManageComp.getpToken).to.have.callCount(1);
+      expect(this.fakeManageComp.rebalancingWithdraw).to.have.callCount(0);
+      expect(await this.manageMultiple.getCurrentBest()).to.be.equal(
+        this.fakeManageAave.address
+      );
+    });
+
     it("occurs when there's a protocol with a bigger APR", async () => {
       this.fakeManageAave.getAPR.returns(2);
       this.fakeManageComp.getAPR.returns(1);
       this.fakeManageComp.getpToken.returns(this.fakeCETH.address);
+
       this.fakeCETH.balanceOf.returns(1);
+      this.fakeRebalancer.totalSupply.returns(1);
 
       await this.manageMultiple.rebalance();
 

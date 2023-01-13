@@ -45,6 +45,18 @@ describe("ManageComp contract", () => {
     );
   });
 
+  describe("setBlocksPerYear()", () => {
+    it("revert when not called by owner", async () => {
+      await expect(
+        this.manageCompContract.connect(this.accounts[1]).setBlocksPerYear(10)
+      ).to.be.reverted;
+    });
+    it("owner should set the variable successfully", async () => {
+      await this.manageCompContract.setBlocksPerYear(10);
+      expect(await this.manageCompContract.getBlocksPerYear()).to.be.equal(10);
+    });
+  });
+
   describe("📈 getAPR()", () => {
     it("does not return zero", async () => {
       this.fakeCToken.supplyRatePerBlock.returns(1);

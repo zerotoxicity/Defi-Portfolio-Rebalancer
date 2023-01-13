@@ -102,7 +102,6 @@ describe("Integration Test ManageMultiple Contract", () => {
         }
       }
     });
-
     it("Rebalancer Token contract has protocol tokens on a successful supply call", async () => {
       const bal = await this.pTokenContract.balanceOf(
         this.rebalancerTokenContract.address

@@ -86,8 +86,10 @@ contract ManageMultiple is
         address nextBest = _getBestAPR();
         if (_currentBest != nextBest) {
             address pToken = IALendingProtocol(_currentBest).getpToken();
-            uint256 bal = IERC20(pToken).balanceOf(_rebalancerToken);
-            if (bal > 0) {
+            if (
+                IERC20(pToken).balanceOf(_rebalancerToken) > 0 &&
+                IERC20(_rebalancerToken).totalSupply() > 0
+            ) {
                 IALendingProtocol(_currentBest).rebalancingWithdraw(nextBest);
                 IALendingProtocol(nextBest).rebalancingSupply();
             }
