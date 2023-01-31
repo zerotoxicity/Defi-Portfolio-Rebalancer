@@ -89,7 +89,7 @@ describe("Integration ManageAave contract", () => {
     });
   });
 
-  describe("Withdraw", () => {
+  describe("💵 Withdraw", () => {
     //Supply first
     beforeEach(async () => {
       await this.wethContract.approve(this.manageAave.address, AMOUNT);
