@@ -6,7 +6,7 @@ const PoolInfoProtocol = ({ protocols }) => {
 
   return (
     <Flex mt={2}>
-      {protocolsLength === 1 ? <Box mr={6} /> : null}
+      {protocolsLength === 1 ? <Box mr={4} /> : null}
       {protocols.map((p) => (
         <ProtocolInfoPopover protocol={p} selected={true} />
       ))}

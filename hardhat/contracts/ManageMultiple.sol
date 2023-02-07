@@ -48,7 +48,6 @@ contract ManageMultiple is
                 index = i;
             }
         }
-
         _currentBest = manageProtocols[index];
     }
 
@@ -126,6 +125,28 @@ contract ManageMultiple is
         return IALendingProtocol(_currentBest).getpToken();
     }
 
+    function getProtocols() external view returns (string[] memory) {
+        uint256 count = 0;
+        for (uint i = 0; i < _manageProtocols.length; i++) {
+            count += IALendingProtocol(_manageProtocols[i])
+                .getProtocols()
+                .length;
+        }
+
+        string[] memory protocolArr = new string[](count);
+        count = 0;
+        for (uint i = 0; i < _manageProtocols.length; i++) {
+            string[] memory temp = IALendingProtocol(_manageProtocols[i])
+                .getProtocols();
+            for (uint k = 0; k < temp.length; k++) {
+                protocolArr[count] = temp[k];
+                count++;
+            }
+        }
+
+        return protocolArr;
+    }
+
     function getCurrentBest() external view returns (address) {
         return _currentBest;
     }
@@ -136,6 +157,42 @@ contract ManageMultiple is
 
     function getRebalancerTokenAddress() external view returns (address) {
         return _rebalancerToken;
+    }
+
+    function setManageProtocol(
+        address[] memory manageProtocols
+    ) external onlyOwner {
+        if (manageProtocols.length != 0) {
+            require(
+                IALendingProtocol(manageProtocols[0]).getAsset() == _asset,
+                "Wrong asset"
+            );
+        }
+        bool withinFlag = false;
+        //Case 1 - currentBest is within new manageProtocols
+        for (uint i = 0; i < manageProtocols.length; i++) {
+            if (_currentBest == manageProtocols[i]) withinFlag = true;
+        }
+        if (withinFlag) {
+            _manageProtocols = manageProtocols;
+            _rebalance();
+        }
+        //Case 2 - current best protocol is not within new manageProtocol
+        else {
+            address newBest;
+            uint256 bestAPR = 0;
+            for (uint i = 0; i < manageProtocols.length; i++) {
+                if (bestAPR < IALendingProtocol(manageProtocols[i]).getAPR()) {
+                    newBest = manageProtocols[i];
+                }
+            }
+            IALendingProtocol(_currentBest).rebalancingWithdraw(newBest);
+            IALendingProtocol(newBest).rebalancingSupply();
+            IRebalancerToken(_rebalancerToken).setpToken(
+                IALendingProtocol(newBest).getpToken()
+            );
+        }
+        _manageProtocols = manageProtocols;
     }
 
     function moveToAnotherRebalancer(

@@ -68,6 +68,13 @@ describe(" ManageAave contract", () => {
     });
   });
 
+  describe("getProtocols", () => {
+    it("returns protocols used", async () => {
+      const arr = ["AAVE"];
+      expect(await this.manageAaveContract.getProtocols()).to.eql(arr);
+    });
+  });
+
   describe("🛠 Supply", () => {
     it("revert when amount <= 0", async () => {
       await expect(this.manageAaveContract.supply(this.accounts[0].address, 0))

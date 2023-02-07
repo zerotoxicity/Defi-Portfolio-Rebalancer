@@ -64,6 +64,13 @@ describe("ManageComp contract", () => {
     });
   });
 
+  describe("getProtocols", () => {
+    it("returns protocols used", async () => {
+      const arr = ["COMP"];
+      expect(await this.manageCompContract.getProtocols()).to.eql(arr);
+    });
+  });
+
   describe("🛠 Supply", () => {
     it("revert when amount <= 0", async () => {
       await expect(this.manageCompContract.supply(this.accounts[0].address, 0))

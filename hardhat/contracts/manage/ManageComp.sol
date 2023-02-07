@@ -7,6 +7,7 @@ import "../ALendingProtocol.sol";
 //Mantissa = 10^18
 contract ManageComp is ALendingProtocol {
     uint256 private _blocksPerYear;
+    string private _protocol;
 
     function initialize(
         address pToken,
@@ -16,10 +17,17 @@ contract ManageComp is ALendingProtocol {
         __ALendingProtocol_init(pToken, rebalancerToken, asset);
         _blocksPerYear = (60 / 12) * 60 * 24 * 365;
         IERC20(_asset).approve(_pToken, type(uint256).max);
+        _protocol = "COMP";
     }
 
     function getConversionRate() public view override returns (uint256) {
         return ICToken(_pToken).exchangeRateStored();
+    }
+
+    function getProtocols() external view override returns (string[] memory) {
+        string[] memory temp = new string[](1);
+        temp[0] = _protocol;
+        return temp;
     }
 
     function _supplyProtocol(uint256 amount) internal virtual override {

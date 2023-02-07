@@ -77,6 +77,8 @@ abstract contract ALendingProtocol is
         uint256 amount
     ) internal virtual;
 
+    function getProtocols() external view virtual returns (string[] memory);
+
     function getRebalancerTokenAddress() external view returns (address) {
         return _rebalancerToken;
     }

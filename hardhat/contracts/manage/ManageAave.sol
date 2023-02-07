@@ -9,6 +9,7 @@ import {DataTypes} from "@aave/protocol-v2/contracts/protocol/libraries/types/Da
 
 contract ManageAave is ALendingProtocol {
     address private _poolProviderAddr;
+    string private _protocol;
 
     function initialize(
         address pToken,
@@ -26,11 +27,18 @@ contract ManageAave is ALendingProtocol {
             ILendingPoolAddressesProvider(_poolProviderAddr).getLendingPool(),
             type(uint256).max
         );
+        _protocol = "AAVE";
     }
 
     // aToken <=> asset is 1:1
     function getConversionRate() public pure override returns (uint256) {
         return 1;
+    }
+
+    function getProtocols() external view override returns (string[] memory) {
+        string[] memory temp = new string[](1);
+        temp[0] = _protocol;
+        return temp;
     }
 
     function _supplyProtocol(uint256 amount) internal override {

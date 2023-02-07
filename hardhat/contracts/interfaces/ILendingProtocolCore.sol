@@ -16,6 +16,8 @@ interface ILendingProtocolCore {
 
     function getpToken() external view returns (address);
 
+    function getProtocols() external view returns (string[] memory);
+
     function getCurrentBest() external view returns (address);
 
     function getConversionRate() external view returns (uint256);

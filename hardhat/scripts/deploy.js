@@ -51,7 +51,7 @@ async function deployManageMultiple() {
 
   await rebalancerTokenContract.setManageProtocol(manageMultiple.address);
   console.log("ManageMultiple deployed!");
-  console.log("ManageMultiple is deployed to: ", manageMultiple.address);
+  console.log("WETH ManageMultiple is deployed to: ", manageMultiple.address);
   console.log(
     "Rebalancer token is deployed to: ",
     rebalancerTokenContract.address
@@ -79,7 +79,7 @@ async function deployManageAave() {
 
   await rebalancerTokenContract.setManageProtocol(manageAave.address);
   console.log("ManageAave deployed!");
-  console.log("ManageAave is deployed to: ", manageAave.address);
+  console.log("WETH ManageAave is deployed to: ", manageAave.address);
   console.log(
     "Rebalancer token is deployed to: ",
     rebalancerTokenContract.address
@@ -107,7 +107,7 @@ async function deployManageComp() {
   await rebalancerTokenContract.setManageProtocol(manageComp.address);
 
   console.log("ManageComp deployed!");
-  console.log("ManageComp is deployed to: ", manageComp.address);
+  console.log("DAI ManageComp is deployed to: ", manageComp.address);
   console.log(
     "Rebalancer token is deployed to: ",
     rebalancerTokenContract.address
@@ -134,7 +134,7 @@ async function deployManageCompWETH() {
   await rebalancerTokenContract.setManageProtocol(manageComp.address);
 
   console.log("ManageComp deployed!");
-  console.log("ManageComp is deployed to: ", manageComp.address);
+  console.log("WETH ManageComp is deployed to: ", manageComp.address);
   console.log(
     "Rebalancer token is deployed to: ",
     rebalancerTokenContract.address

@@ -20,3 +20,5 @@ artifacts/
 
 .yalc
 yalc.lock
+
+hardhat/.openzeppelin/unknown-31337.json

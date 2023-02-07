@@ -1,5 +1,4 @@
 import { Card } from "@chakra-ui/react";
-import { useTheme } from "@emotion/react";
 import PoolCardBody from "./PoolCardBody";
 import PoolHeader from "./PoolHeader";
 

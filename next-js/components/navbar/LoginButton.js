@@ -8,7 +8,7 @@ const LoginButton = () => {
   const onClickHandler = async () => {
     if (typeof window.ethereum !== "undefined") {
       try {
-        authContext.login();
+        await authContext.login();
       } catch (e) {
         console.log(e.message);
       }

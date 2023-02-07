@@ -55,6 +55,15 @@ describe("Manage Multiple contract", () => {
     });
   });
 
+  describe("getProtocols", () => {
+    it("returns protocols used", async () => {
+      this.fakeManageAave.getProtocols.returns(["AAVE"]);
+      this.fakeManageComp.getProtocols.returns(["COMP"]);
+      const arr = ["AAVE", "COMP"];
+      expect(await this.manageMultiple.getProtocols()).to.eql(arr);
+    });
+  });
+
   describe("Supply", () => {
     it("reverts when user did not approve the contract on asset contract", async () => {
       this.fakeWeth.allowance.returns(0);

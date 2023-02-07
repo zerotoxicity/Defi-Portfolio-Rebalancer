@@ -4,6 +4,8 @@ import { ethers } from "ethers";
 const AuthContext = React.createContext({
   isLoggedIn: false,
   address: "",
+  signer: "",
+  provider: "",
   login: () => {},
   logout: () => {},
   switchAccount: () => {},
@@ -12,6 +14,8 @@ const AuthContext = React.createContext({
 export const AuthContextProvider = (props) => {
   const [address, setAddress] = useState("");
   const [userLoggedIn, setUserLoggedIn] = useState(!!address);
+  const [signer, setSigner] = useState("");
+  const [provider, setProvider] = useState("");
 
   const loginHandler = async () => {
     var accounts = await ethereum.request({ method: "eth_accounts" });
@@ -28,6 +32,9 @@ export const AuthContextProvider = (props) => {
     }
     setAddress(localStorage.getItem("address"));
     setUserLoggedIn(true);
+    const provider = new ethers.providers.Web3Provider(window.ethereum);
+    setProvider(provider);
+    setSigner(provider.getSigner());
   };
 
   const logoutHandler = () => {
@@ -44,6 +51,8 @@ export const AuthContextProvider = (props) => {
   const contextValue = {
     isLoggedIn: userLoggedIn,
     address: address,
+    signer: signer,
+    provider: provider,
     login: loginHandler,
     logout: logoutHandler,
     switchAccount: switchAccountHandler,
