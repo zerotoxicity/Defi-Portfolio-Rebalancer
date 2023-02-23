@@ -1,14 +1,20 @@
-import { Box, Flex, Image, Stack } from "@chakra-ui/react";
+import { Box, Flex, Image, Stack, Text } from "@chakra-ui/react";
 import ProtocolInfoPopover from "./popover-components/ProtocolInfoPopover";
 
-const PoolInfoProtocol = ({ protocols }) => {
+const PoolInfoProtocol = ({ protocols, apy }) => {
+  const maxAPY = Number(Math.max(...apy)).toFixed(2);
   const protocolsLength = protocols.length;
 
   return (
     <Flex mt={2}>
       {protocolsLength === 1 ? <Box mr={4} /> : null}
-      {protocols.map((p) => (
-        <ProtocolInfoPopover protocol={p} selected={true} />
+      {protocols.map((p, index) => (
+        <ProtocolInfoPopover
+          key={index}
+          protocol={p}
+          selected={apy[index] === maxAPY}
+          apy={apy[index]}
+        />
       ))}
     </Flex>
   );

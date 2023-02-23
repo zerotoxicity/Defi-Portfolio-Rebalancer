@@ -12,6 +12,8 @@ interface ILendingProtocolCore {
 
     function getAsset() external view returns (address);
 
+    function getAllAPR() external view returns (uint256[] memory);
+
     function getAPR() external view returns (uint256);
 
     function getpToken() external view returns (address);

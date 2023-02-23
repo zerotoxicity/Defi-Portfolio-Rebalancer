@@ -1,11 +1,11 @@
 import { Grid, GridItem, Image, Stack, Text } from "@chakra-ui/react";
-import { TokensEnum } from "components/enums";
+import { TokensEnum } from "components/constants";
 
-const PoolInfoAsset = ({ assetSymbol }) => {
+const PoolInfoAsset = ({ asset }) => {
   const enumKeys = Object.keys(TokensEnum);
   let assetName = "PLACEHOLDER";
   for (const k of enumKeys) {
-    if (k === assetSymbol) {
+    if (k === asset) {
       assetName = TokensEnum[k];
     }
   }
@@ -16,8 +16,8 @@ const PoolInfoAsset = ({ assetSymbol }) => {
         mt={2}
         borderRadius="full"
         boxSize="50px"
-        src={`icons/${assetSymbol}.png`}
-        alt={assetSymbol}
+        src={`icons/${asset}.png`}
+        alt={asset}
       />
 
       <Grid templateRows="repeat(2,1fr)">
@@ -27,7 +27,7 @@ const PoolInfoAsset = ({ assetSymbol }) => {
           </Text>
         </GridItem>
         <GridItem rowStart={2}>
-          <Text color="gray">{assetSymbol}</Text>
+          <Text color="gray">{asset}</Text>
         </GridItem>
       </Grid>
     </Stack>

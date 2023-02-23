@@ -6,6 +6,8 @@ require("@openzeppelin/hardhat-upgrades");
 require("solidity-coverage");
 
 const MAINNET_RPC_URL = process.env.MAINNET_RPC_URL;
+const GOERLI_RPC_URL = process.env.GOERLI_RPC_URL;
+const GOERLI_KEY = process.env.GOERLI_KEY;
 
 module.exports = {
   solidity: {
@@ -27,11 +29,21 @@ module.exports = {
   },
   defaultNetwork: "hardhat",
   networks: {
-    localhost: {
-      chainId: 31337,
+    hardhat: {
+      chainId: 1337,
       forking: {
-        url: MAINNET_RPC_URL,
+        url: `${MAINNET_RPC_URL}`,
       },
+    },
+
+    localhost: {
+      chainId: 1337,
+    },
+
+    goerli: {
+      url: `${GOERLI_RPC_URL}`,
+      accounts: [GOERLI_KEY],
+      chainId: 5,
     },
   },
   namedAccounts: {

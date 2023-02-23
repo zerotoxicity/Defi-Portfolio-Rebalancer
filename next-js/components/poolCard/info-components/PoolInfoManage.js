@@ -10,7 +10,7 @@ import {
 import { useRef } from "react";
 import ModalBodyContent from "./modal-components/ModalBodyContent";
 
-const PoolInfoManage = () => {
+const PoolInfoManage = ({ contractAddr }) => {
   const { isOpen, onOpen, onClose } = useDisclosure();
   const initialRef = useRef(null);
   const finalRef = useRef(null);
@@ -35,7 +35,10 @@ const PoolInfoManage = () => {
         <ModalContent>
           <ModalHeader>Manage asset</ModalHeader>
           <ModalCloseButton />
-          <ModalBodyContent initialRef={initialRef} />
+          <ModalBodyContent
+            initialRef={initialRef}
+            contractAddr={contractAddr}
+          />
         </ModalContent>
       </Modal>
     </>

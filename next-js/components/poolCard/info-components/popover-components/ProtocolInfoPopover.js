@@ -7,14 +7,17 @@ import {
   PopoverTrigger,
 } from "@chakra-ui/react";
 import PopoverBodyContent from "./PopoverBodyContent";
-//TODO selected
-const ProtocolInfoPopover = ({ protocol, selected }) => {
+const ProtocolInfoPopover = ({ protocol, selected, apy }) => {
+  const selectedImgStyle = selected
+    ? { border: "4px", borderRadius: "full", borderColor: "primary.500" }
+    : null;
+
   return (
     <Popover placement="top" trigger="hover">
       <PopoverTrigger>
         <Image
           src={`icons/${protocol}.png`}
-          {...(selected ? { border: "2px", borderRadius: "full" } : null)}
+          {...selectedImgStyle}
           boxSize="50px"
           mr={2}
         />
@@ -22,7 +25,11 @@ const ProtocolInfoPopover = ({ protocol, selected }) => {
       <PopoverContent>
         <PopoverArrow />
         <PopoverBody>
-          <PopoverBodyContent />
+          <PopoverBodyContent
+            protocol={protocol}
+            selected={selected}
+            apy={apy}
+          />
         </PopoverBody>
       </PopoverContent>
     </Popover>

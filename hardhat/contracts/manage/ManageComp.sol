@@ -83,7 +83,13 @@ contract ManageComp is ALendingProtocol {
         _blocksPerYear = amount;
     }
 
-    function getAPR() external view virtual override returns (uint256) {
+    function getAllAPR() external view override returns (uint256[] memory) {
+        uint256[] memory aprArr = new uint256[](1);
+        aprArr[0] = getAPR();
+        return aprArr;
+    }
+
+    function getAPR() public view virtual override returns (uint256) {
         return ICToken(_pToken).supplyRatePerBlock() * _blocksPerYear;
     }
 

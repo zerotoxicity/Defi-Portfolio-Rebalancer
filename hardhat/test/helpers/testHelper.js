@@ -9,6 +9,8 @@ async function deployContract(contractName, args) {
   const contract = await upgrades.deployProxy(contractFactory, args, {
     kind: "uups",
   });
+  await contract.deployed();
+  console.log("Deployed ", contractName);
   return contract;
 }
 

@@ -83,7 +83,13 @@ contract ManageAave is ALendingProtocol {
         _withdraw(account, amount);
     }
 
-    function getAPR() external view override returns (uint256) {
+    function getAllAPR() external view override returns (uint256[] memory) {
+        uint256[] memory aprArr = new uint256[](1);
+        aprArr[0] = getAPR();
+        return aprArr;
+    }
+
+    function getAPR() public view override returns (uint256) {
         address lendingPoolAddr = ILendingPoolAddressesProvider(
             _poolProviderAddr
         ).getLendingPool();

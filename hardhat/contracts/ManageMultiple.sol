@@ -8,6 +8,8 @@ import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 import "@openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
 
+import "hardhat/console.sol";
+
 contract ManageMultiple is
     IManageMultiple,
     Initializable,
@@ -54,7 +56,9 @@ contract ManageMultiple is
     function _authorizeUpgrade(address) internal override onlyOwner {}
 
     function supply(address account, uint256 amount) external rebalanceCheck {
-        require(IERC20(_asset).allowance(msg.sender, address(this)) >= amount);
+        uint256 all = IERC20(_asset).allowance(msg.sender, address(this));
+        require(all >= amount, "Increase allowance");
+
         IERC20(_asset).transferFrom(msg.sender, address(this), amount);
         IALendingProtocol(_currentBest).supply(account, amount);
     }
@@ -72,7 +76,8 @@ contract ManageMultiple is
     function withdraw(address account, uint256 amount) external rebalanceCheck {
         require(
             IERC20(_rebalancerToken).allowance(msg.sender, address(this)) >=
-                amount
+                amount,
+            "Increase allowance"
         );
         _withdraw(account, amount);
     }
@@ -139,12 +144,21 @@ contract ManageMultiple is
             string[] memory temp = IALendingProtocol(_manageProtocols[i])
                 .getProtocols();
             for (uint k = 0; k < temp.length; k++) {
-                protocolArr[count] = temp[k];
-                count++;
+                protocolArr[count++] = temp[k];
             }
         }
 
         return protocolArr;
+    }
+
+    function getAllAPR() external view returns (uint256[] memory) {
+        uint256 count = 0;
+        uint256[] memory aprArr = new uint256[](_manageProtocols.length);
+        for (uint256 i = 0; i < _manageProtocols.length; i++) {
+            uint256 apr = IALendingProtocol(_manageProtocols[i]).getAPR();
+            aprArr[count++] = apr;
+        }
+        return aprArr;
     }
 
     function getCurrentBest() external view returns (address) {

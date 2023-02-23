@@ -1,5 +1,5 @@
 const networkConfig = {
-  31337: {
+  1337: {
     name: "hardhat",
     poolAddrProvider: "0xB53C1a33016B2DC2fF3653530bfF1848a515c8c5",
     uniswapRouter: "0x7a250d5630b4cf539739df2c5dacb4c659f2488d",

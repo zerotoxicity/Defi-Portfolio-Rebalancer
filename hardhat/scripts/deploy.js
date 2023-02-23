@@ -2,21 +2,33 @@ const { ethers, network } = require("hardhat");
 const { networkConfig } = require("../helper-hardhat-config");
 const { deployContract } = require("../test/helpers/testHelper");
 
+const wethContractAddress = networkConfig[network.config.chainId].WETHToken;
+const cETHContractAddress = networkConfig[network.config.chainId].cETHToken;
+const aWethContractAddress = networkConfig[network.config.chainId].aWETHToken;
+const poolProviderAddress =
+  networkConfig[network.config.chainId].poolAddrProvider;
+const daiTokenAddress = networkConfig[network.config.chainId].DAIToken;
+const cDAITokenAddress = networkConfig[network.config.chainId].cDAIToken;
+
 async function main() {
   console.log("⏳ Deploying..");
-  await deployManageMultiple();
-  await deployManageAave();
-  await deployManageComp();
-  await deployManageCompWETH();
+  //WETH
+  // await deployManageMultiple();
+  // await deployManageAave();
+  // await deployManageCompWETH();
+
+  const Token = await ethers.getContractFactory("Token");
+  const token = await Token.deploy();
+  await token.deployed();
+  console.log("Deployed");
+
+  //DAI
+  // await deployManageComp();
   console.log("✅ All deployed!");
 }
 
+//WETH
 async function deployManageMultiple() {
-  wethContractAddress = networkConfig[network.config.chainId].WETHToken;
-  cETHContractAddress = networkConfig[network.config.chainId].cETHToken;
-  aWethContractAddress = networkConfig[network.config.chainId].aWETHToken;
-  poolProviderAddress = networkConfig[network.config.chainId].poolAddrProvider;
-
   rebalancerTokenContract = await deployContract("RebalancerToken", [
     "RCompETH",
     "RCETH",
@@ -30,12 +42,12 @@ async function deployManageMultiple() {
     rebalancerTokenContract.address,
     wethContractAddress,
   ]);
-
   manageAave = await deployContract("ManageAave", [
     aWethContractAddress,
     rebalancerTokenContract.address,
     poolProviderAddress,
   ]);
+
   manageProtocolsAddress = [manageComp.address, manageAave.address];
 
   manageProtocols = [manageAave, manageComp];
@@ -60,10 +72,6 @@ async function deployManageMultiple() {
 }
 
 async function deployManageAave() {
-  wethContractAddress = networkConfig[network.config.chainId].WETHToken;
-  aWethContractAddress = networkConfig[network.config.chainId].aWETHToken;
-  poolProviderAddress = networkConfig[network.config.chainId].poolAddrProvider;
-
   rebalancerTokenContract = await deployContract("RebalancerToken", [
     "RAaveWETH",
     "RAWETH",
@@ -87,10 +95,31 @@ async function deployManageAave() {
   console.log("");
 }
 
-async function deployManageComp() {
-  daiTokenAddress = networkConfig[network.config.chainId].DAIToken;
-  cDAITokenAddress = networkConfig[network.config.chainId].cDAIToken;
+async function deployManageCompWETH() {
+  rebalancerTokenContract = await deployContract("RebalancerToken", [
+    "RCompETH",
+    "RCETH",
+    cETHContractAddress,
+    wethContractAddress,
+  ]);
+  manageComp = await deployContract("ManageCompWETH", [
+    cETHContractAddress,
+    rebalancerTokenContract.address,
+    wethContractAddress,
+  ]);
 
+  await rebalancerTokenContract.setManageProtocol(manageComp.address);
+
+  console.log("ManageComp deployed!");
+  console.log("WETH ManageComp is deployed to: ", manageComp.address);
+  console.log(
+    "Rebalancer token is deployed to: ",
+    rebalancerTokenContract.address
+  );
+  console.log("");
+}
+
+async function deployManageComp() {
   rebalancerTokenContract = await deployContract("RebalancerToken", [
     "RCompDAI",
     "RCDAI",
@@ -108,33 +137,6 @@ async function deployManageComp() {
 
   console.log("ManageComp deployed!");
   console.log("DAI ManageComp is deployed to: ", manageComp.address);
-  console.log(
-    "Rebalancer token is deployed to: ",
-    rebalancerTokenContract.address
-  );
-  console.log("");
-}
-
-async function deployManageCompWETH() {
-  wethContractAddress = networkConfig[network.config.chainId].WETHToken;
-  cETHContractAddress = networkConfig[network.config.chainId].cETHToken;
-
-  rebalancerTokenContract = await deployContract("RebalancerToken", [
-    "RCompETH",
-    "RCETH",
-    cETHContractAddress,
-    wethContractAddress,
-  ]);
-  manageComp = await deployContract("ManageCompWETH", [
-    cETHContractAddress,
-    rebalancerTokenContract.address,
-    wethContractAddress,
-  ]);
-
-  await rebalancerTokenContract.setManageProtocol(manageComp.address);
-
-  console.log("ManageComp deployed!");
-  console.log("WETH ManageComp is deployed to: ", manageComp.address);
   console.log(
     "Rebalancer token is deployed to: ",
     rebalancerTokenContract.address

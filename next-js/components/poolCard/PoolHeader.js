@@ -8,8 +8,8 @@ const PoolHeader = () => {
           Asset
         </Text>
       </GridItem>
-      <GridItem colStart={4} colSpan={3}>
-        <Text fontSize="lg" as="b">
+      <GridItem colStart={4}>
+        <Text ml={3} fontSize="lg" as="b">
           Protocols
         </Text>
       </GridItem>
