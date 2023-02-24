@@ -13,14 +13,13 @@ const cDAITokenAddress = networkConfig[network.config.chainId].cDAIToken;
 async function main() {
   console.log("⏳ Deploying..");
   //WETH
-  // await deployManageMultiple();
-  // await deployManageAave();
-  // await deployManageCompWETH();
+  await deployManageMultiple();
+  await deployManageAave();
+  await deployManageCompWETH();
 
-  const Token = await ethers.getContractFactory("Token");
-  const token = await Token.deploy();
-  await token.deployed();
-  console.log("Deployed");
+  // const Token = await ethers.getContractFactory("Token");
+  // const token = await Token.deploy();
+  // await token.deployed();
 
   //DAI
   // await deployManageComp();

@@ -4,6 +4,7 @@ require("@nomicfoundation/hardhat-chai-matchers");
 require("hardhat-deploy");
 require("@openzeppelin/hardhat-upgrades");
 require("solidity-coverage");
+require("@nomicfoundation/hardhat-foundry");
 
 const MAINNET_RPC_URL = process.env.MAINNET_RPC_URL;
 const GOERLI_RPC_URL = process.env.GOERLI_RPC_URL;

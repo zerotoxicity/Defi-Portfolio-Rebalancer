@@ -10,7 +10,6 @@ async function deployContract(contractName, args) {
     kind: "uups",
   });
   await contract.deployed();
-  console.log("Deployed ", contractName);
   return contract;
 }
 

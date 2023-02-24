@@ -58,7 +58,7 @@ contract ManageMultiple is
     function supply(address account, uint256 amount) external rebalanceCheck {
         uint256 all = IERC20(_asset).allowance(msg.sender, address(this));
         require(all >= amount, "Increase allowance");
-
+        console.log("Passed requirement");
         IERC20(_asset).transferFrom(msg.sender, address(this), amount);
         IALendingProtocol(_currentBest).supply(account, amount);
     }
