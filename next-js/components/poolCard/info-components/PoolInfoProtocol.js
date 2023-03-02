@@ -7,12 +7,12 @@ const PoolInfoProtocol = ({ protocols, apy }) => {
 
   return (
     <Flex mt={2}>
-      {protocolsLength === 1 ? <Box mr={4} /> : null}
+      {protocolsLength === 1 ? <Box mr={6} /> : null}
       {protocols.map((p, index) => (
         <ProtocolInfoPopover
           key={index}
           protocol={p}
-          selected={apy[index] === maxAPY}
+          selected={apy[index] === maxAPY || protocols.length === 1}
           apy={apy[index]}
         />
       ))}

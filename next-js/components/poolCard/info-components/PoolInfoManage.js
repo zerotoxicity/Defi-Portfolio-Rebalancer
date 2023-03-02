@@ -5,6 +5,7 @@ import {
   ModalContent,
   ModalHeader,
   ModalOverlay,
+  Text,
   useDisclosure,
 } from "@chakra-ui/react";
 import { useRef } from "react";
@@ -18,12 +19,13 @@ const PoolInfoManage = ({ contractAddr }) => {
   return (
     <>
       <Button
+        w={{ base: 10, md: 20 }}
         onClick={onOpen}
         {...(isOpen ? { variant: "solid" } : { variant: "outline" })}
         colorScheme="primary"
         ref={finalRef}
       >
-        Manage
+        <Text fontSize={{ base: 8, md: 17 }}>Manage</Text>
       </Button>
       <Modal
         isOpen={isOpen}

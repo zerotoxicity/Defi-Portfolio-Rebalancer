@@ -4,7 +4,7 @@ import PoolHeader from "./PoolHeader";
 
 const PoolCard = () => {
   return (
-    <Card m={20}>
+    <Card m={{ base: 1, md: 20 }}>
       <PoolHeader />
       <PoolCardBody />
     </Card>

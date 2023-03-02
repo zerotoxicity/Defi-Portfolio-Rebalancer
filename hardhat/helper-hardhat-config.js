@@ -1,5 +1,5 @@
 const networkConfig = {
-  1337: {
+  31337: {
     name: "hardhat",
     poolAddrProvider: "0xB53C1a33016B2DC2fF3653530bfF1848a515c8c5",
     uniswapRouter: "0x7a250d5630b4cf539739df2c5dacb4c659f2488d",
@@ -14,7 +14,7 @@ const networkConfig = {
 
     wBTCToken: "0x2260FAC5E5542a773Aa44fBCfeDf7C193bc2C599",
     aWBTCToken: "0x9ff58f4fFB29fA2266Ab25e75e2A8b3503311656",
-    cWBTCToken: "0xDa6F609F3636062E06fFB5a1701Df3c5F1ab3C8f",
+    cWBTCToken: "0xC11b1268C1A384e55C48c2391d8d480264A3A7F4",
   },
 
   5: {

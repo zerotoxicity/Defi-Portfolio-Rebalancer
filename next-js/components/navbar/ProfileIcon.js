@@ -14,7 +14,7 @@ const ProfileIcon = () => {
       <Stack direction="row">
         <Jazzicon diameter={30} seed={jsNumberForAddress(address)} />
         <Box pt={1}>
-          <Text fontSize="md" as="b">
+          <Text fontSize={{ base: "sm", md: "md" }} as="b">
             {slicedAddr}
           </Text>
         </Box>

@@ -1,13 +1,9 @@
-import { CardBody, Text } from "@chakra-ui/react";
+import { Box, CardBody } from "@chakra-ui/react";
 import {
   AssetAddressEnum,
   manageContractAddresses,
 } from "components/constants";
-import {
-  calculateAPY,
-  calculateAPYArr,
-  convertTo2Decimals,
-} from "components/helperFunctions";
+import { calculateAPYArr } from "components/helperFunctions";
 import { ethers } from "ethers";
 import { ILENDINGPROTOCOL_ABI } from "jsABI/ILendingProtocolCore";
 import { useContext, useEffect, useState } from "react";
@@ -60,7 +56,7 @@ const PoolCardBody = () => {
   }, [authContext.signer]);
 
   return (
-    <CardBody>
+    <CardBody mb={3}>
       {isLoaded
         ? Object.keys(manageContractsDetails).map((item, index) => {
             return (

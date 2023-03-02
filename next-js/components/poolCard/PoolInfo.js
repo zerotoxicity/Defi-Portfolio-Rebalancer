@@ -1,5 +1,4 @@
 import { Button, Grid, GridItem, Text } from "@chakra-ui/react";
-import { convertTo2Decimals } from "components/helperFunctions";
 import PoolInfoAsset from "./info-components/PoolInfoAsset";
 import PoolInfoManage from "./info-components/PoolInfoManage";
 import PoolInfoProtocol from "./info-components/PoolInfoProtocol";
@@ -11,13 +10,13 @@ const PoolInfo = ({ asset, protocols, apy, contractAddr }) => {
       <GridItem colStart={1}>
         <PoolInfoAsset asset={asset} />
       </GridItem>
-      <GridItem colStart={4} colSpan={1}>
+      <GridItem colStart={{ base: 4, sm: 4 }}>
         <PoolInfoProtocol protocols={protocols} apy={apy} />
       </GridItem>
-      <GridItem colStart={7} mt={5}>
+      <GridItem colStart={{ base: 7, sm: 7 }} mt={{ base: 3, sm: 5 }}>
         <Text>{maxAPY}%</Text>
       </GridItem>
-      <GridItem colStart={9} mt={3}>
+      <GridItem colStart={9} mt={{ base: 1, sm: 3 }}>
         <PoolInfoManage contractAddr={contractAddr} />
       </GridItem>
     </Grid>

@@ -7,7 +7,9 @@ export default function Document() {
       className="scroll-smooth"
       style={{ scrollBehavior: "smooth" }}
     >
-      <Head />
+      <Head>
+        <link rel="manifest" href="/manifest.json" />
+      </Head>
       <body>
         <Main />
         <NextScript />

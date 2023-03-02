@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { ethers } from "ethers";
+import detectEthereumProvider from "@metamask/detect-provider";
 
 const AuthContext = React.createContext({
   isLoggedIn: false,
@@ -18,7 +19,7 @@ export const AuthContextProvider = (props) => {
   const [provider, setProvider] = useState("");
 
   const loginHandler = async () => {
-    var accounts = await ethereum.request({ method: "eth_accounts" });
+    var accounts = await window.ethereum.request({ method: "eth_accounts" });
 
     //Not connected
     if (!(accounts && accounts.length > 0)) {

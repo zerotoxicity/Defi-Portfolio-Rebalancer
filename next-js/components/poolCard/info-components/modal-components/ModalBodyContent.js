@@ -1,6 +1,7 @@
 import {
   Box,
   Button,
+  ButtonGroup,
   Flex,
   FormControl,
   FormLabel,
@@ -11,7 +12,6 @@ import {
   Select,
 } from "@chakra-ui/react";
 import { manageContractAddresses } from "components/constants";
-import { approveToken, rebDeposit } from "components/onChainFunctions";
 import { ethers } from "ethers";
 import { IERC20_ABI } from "jsABI/IERC20";
 import { ILENDINGPROTOCOL_ABI } from "jsABI/ILendingProtocolCore";
@@ -22,14 +22,16 @@ const ModalBodyContent = ({ initialRef, contractAddr }) => {
   const authContext = useContext(AuthContext);
 
   let arrWithAddr;
+  let asset = "";
+  let mantissa = 0;
   const [amount, setAmount] = useState("");
   const [transferAddr, setTransferAddr] = useState("");
-  const [asset, setAsset] = useState("");
-  const [mantissa, setMantissa] = useState(0);
+  const [validAmt, setValidAmt] = useState(false);
   const [approved, setApproved] = useState(true);
+  const [approveButtonClickable, setApproveButtonClickable] = useState(true);
   const [approvalText, setApprovalText] = useState("Approve funds");
   const [manageContractObj, setManageContractObj] = useState();
-  const [assetAddrObj, setAssetAddrObj] = useState();
+  const [tokenContract, setTokenContract] = useState();
 
   if (manageContractObj == null) {
     setManageContractObj(
@@ -48,8 +50,8 @@ const ModalBodyContent = ({ initialRef, contractAddr }) => {
     for (var j = 0; j < tempArr.length; j++) {
       if (tempArr[j][0] === contractAddr) {
         if (asset === "") {
-          setAsset(contracts.name);
-          setMantissa(contracts.mantissa);
+          asset = contracts.name;
+          mantissa = contracts.mantissa;
         }
         arrWithAddr = tempArr;
         break;
@@ -65,24 +67,63 @@ const ModalBodyContent = ({ initialRef, contractAddr }) => {
     setTransferAddr(e.target.value);
   };
 
-  async function depositOnClick() {
-    const addr = await manageContractObj.getAsset();
+  async function allowanceCheck(tokenAddr) {
     const tokenContract = new ethers.Contract(
-      addr,
+      tokenAddr,
       IERC20_ABI,
       authContext.signer
     );
-    setAssetAddrObj(tokenContract);
-    const allowance = ethers.utils.formatEther(
-      await tokenContract.allowance(authContext.address, contractAddr)
+    setTokenContract(tokenContract);
+    const allowance = ethers.utils.formatUnits(
+      await tokenContract.allowance(authContext.address, contractAddr),
+      mantissa
     );
 
-    if (allowance < amount) {
+    return (
+      parseFloat(parseFloat(allowance).toFixed(2)) <
+      parseFloat(parseFloat(amount).toFixed(2))
+    );
+  }
+
+  async function depositHandler() {
+    const addr = await manageContractObj.getAsset();
+
+    if (await allowanceCheck(addr)) {
       setApproved(false);
     } else {
       await manageContractObj.supply(
         authContext.address,
-        ethers.utils.parseEther(amount)
+        ethers.utils.parseUnits(amount, mantissa),
+        { gasLimit: 2000000 }
+      );
+    }
+  }
+
+  async function withdrawHandler() {
+    const addr = await manageContractObj.getRebalancerTokenAddress();
+
+    if (await allowanceCheck(addr)) {
+      setApproved(false);
+    } else {
+      await manageContractObj.withdraw(
+        authContext.address,
+        ethers.utils.parseUnits(amount, mantissa),
+        { gasLimit: 2000000 }
+      );
+    }
+  }
+
+  async function transferHandler() {
+    if (!transferAddr) return;
+    const addr = await manageContractObj.getRebalancerTokenAddress();
+
+    if (await allowanceCheck(addr)) {
+      setApproved(false);
+    } else {
+      await manageContractObj.moveToAnotherRebalancer(
+        transferAddr,
+        ethers.utils.parseUnits(amount, mantissa),
+        { gasLimit: 2000000 }
       );
     }
   }
@@ -97,7 +138,8 @@ const ModalBodyContent = ({ initialRef, contractAddr }) => {
             placeholder={`Amount (in ${asset})`}
             value={amount}
             onChange={(e) => {
-              if (e.target.value <= 0) return;
+              if (e.target.value <= 0) setValidAmt(false);
+              else setValidAmt(true);
               setAmount(e.target.value);
             }}
           />
@@ -105,7 +147,7 @@ const ModalBodyContent = ({ initialRef, contractAddr }) => {
         <FormControl mt={4}>
           <FormLabel>Transfer asset to:</FormLabel>
           <Select
-            placeholder="Transfer asset to (Only applicable to 'Manage')"
+            placeholder="Only applicable to 'Transfer'"
             value={transferAddr}
             onChange={changeHandler}
           >
@@ -124,25 +166,43 @@ const ModalBodyContent = ({ initialRef, contractAddr }) => {
       {/* BUTTON GROUP */}
 
       <Box mt={10} />
-      <Grid templateColumns="repeat(5,1fr)">
-        <GridItem>
-          <Button isDisabled={!approved}>Withdraw</Button>
-        </GridItem>
-        <GridItem colStart="3">
-          <Button isDisabled={!approved}>Manage</Button>
-        </GridItem>
-        <GridItem colStart={5} isDisabled={!approved}>
-          <Button
-            colorScheme="primary"
-            onClick={async () => {
-              if (amount <= 0) return;
-              await depositOnClick();
-            }}
-          >
-            Deposit
-          </Button>
-        </GridItem>
-      </Grid>
+      <ButtonGroup
+        isDisabled={!approved || !validAmt}
+        size={{ base: "sm", sm: "md" }}
+      >
+        <Grid templateColumns="repeat(5,1fr)">
+          <GridItem colStart={1}>
+            <Button
+              onClick={async () => {
+                await withdrawHandler();
+              }}
+            >
+              Withdraw
+            </Button>
+          </GridItem>
+
+          <GridItem colStart={3}>
+            <Button
+              onClick={async () => {
+                await transferHandler();
+              }}
+            >
+              Transfer
+            </Button>
+          </GridItem>
+
+          <GridItem colStart={5}>
+            <Button
+              colorScheme="primary"
+              onClick={async () => {
+                await depositHandler();
+              }}
+            >
+              Deposit
+            </Button>
+          </GridItem>
+        </Grid>
+      </ButtonGroup>
 
       {/* APPROVAL BUTTON */}
 
@@ -150,14 +210,22 @@ const ModalBodyContent = ({ initialRef, contractAddr }) => {
         <Flex flexDir="column" alignItems="stretch" width="100%">
           <Box mt={10} />
           <Button
+            isDisabled={!approveButtonClickable}
             onClick={async () => {
               setApprovalText("Please wait..");
-              const val = ethers.utils.parseEther(amount);
-              await assetAddrObj.approve(contractAddr, val);
-              assetAddrObj.on("Approval", (owner, spender, value) => {
-                if (value >= val) setApproved(true);
+              setApproveButtonClickable(false);
+              const amt = ethers.utils.parseEther(amount);
+              try {
+                await tokenContract.approve(contractAddr, amt);
+                tokenContract.on("Approval", (owner, spender, value) => {
+                  if (value >= amt) setApproved(true);
+                  setApprovalText("Approve funds");
+                  setApproveButtonClickable(true);
+                });
+              } catch (e) {
                 setApprovalText("Approve funds");
-              });
+                setApproveButtonClickable(true);
+              }
             }}
           >
             {approvalText}

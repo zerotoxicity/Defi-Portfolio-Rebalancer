@@ -58,12 +58,17 @@ contract ManageMultiple is
     function supply(address account, uint256 amount) external rebalanceCheck {
         uint256 all = IERC20(_asset).allowance(msg.sender, address(this));
         require(all >= amount, "Increase allowance");
-        console.log("Passed requirement");
         IERC20(_asset).transferFrom(msg.sender, address(this), amount);
         IALendingProtocol(_currentBest).supply(account, amount);
     }
 
     function _withdraw(address account, uint256 amount) internal {
+        require(
+            IERC20(_rebalancerToken).allowance(msg.sender, address(this)) >=
+                amount,
+            "Increase allowance"
+        );
+
         IERC20(_rebalancerToken).transferFrom(
             msg.sender,
             address(this),
@@ -74,11 +79,6 @@ contract ManageMultiple is
     }
 
     function withdraw(address account, uint256 amount) external rebalanceCheck {
-        require(
-            IERC20(_rebalancerToken).allowance(msg.sender, address(this)) >=
-                amount,
-            "Increase allowance"
-        );
         _withdraw(account, amount);
     }
 

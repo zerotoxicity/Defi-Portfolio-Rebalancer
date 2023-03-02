@@ -18,7 +18,7 @@ const ProtocolInfoPopover = ({ protocol, selected, apy }) => {
         <Image
           src={`icons/${protocol}.png`}
           {...selectedImgStyle}
-          boxSize="50px"
+          boxSize={{ base: 7, sm: 10, md: 12 }}
           mr={2}
         />
       </PopoverTrigger>

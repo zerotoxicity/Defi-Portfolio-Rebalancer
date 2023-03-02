@@ -1,6 +1,7 @@
 import { useContext, useEffect } from "react";
 import AuthContext from "store/auth-context";
 import PoolCard from "components/poolCard/PoolCard";
+import MetaMaskSDK from "@metamask/sdk";
 
 export default function Home() {
   const authContext = useContext(AuthContext);

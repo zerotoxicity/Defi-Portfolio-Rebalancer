@@ -5,6 +5,7 @@ require("hardhat-deploy");
 require("@openzeppelin/hardhat-upgrades");
 require("solidity-coverage");
 require("@nomicfoundation/hardhat-foundry");
+require("hardhat-gas-reporter");
 
 const MAINNET_RPC_URL = process.env.MAINNET_RPC_URL;
 const GOERLI_RPC_URL = process.env.GOERLI_RPC_URL;
@@ -28,17 +29,20 @@ module.exports = {
       },
     ],
   },
+  gasReporter: {
+    enabled: process.env.REPORT_GAS ? true : false,
+  },
   defaultNetwork: "hardhat",
   networks: {
     hardhat: {
-      chainId: 1337,
+      chainId: 31337,
       forking: {
         url: `${MAINNET_RPC_URL}`,
       },
     },
 
     localhost: {
-      chainId: 1337,
+      chainId: 31337,
     },
 
     goerli: {

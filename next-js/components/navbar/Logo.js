@@ -1,17 +1,20 @@
-import { Heading, Image, Stack, Grid, GridItem } from "@chakra-ui/react";
+import { Heading, Image, Stack, Grid, GridItem, Text } from "@chakra-ui/react";
 
 const Logo = () => {
   return (
     <Stack direction="row">
       <Image
         borderRadius="full"
-        boxSize="75px"
+        mt={3}
+        boxSize={{ base: 10, md: "50px" }}
         src={"icons/WETH.png"}
         alt="Rebalancer"
       />
       <Grid templateRows="repeat(3,1fr)">
         <GridItem rowStart={2}>
-          <Heading size="md">Rebalancer</Heading>
+          <Text as="b" fontSize={{ base: 0, sm: "md" }}>
+            Rebalancer
+          </Text>
         </GridItem>
       </Grid>
     </Stack>
