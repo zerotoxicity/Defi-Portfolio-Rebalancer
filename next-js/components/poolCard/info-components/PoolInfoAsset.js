@@ -28,7 +28,7 @@ const PoolInfoAsset = ({ asset }) => {
           </Text>
         </GridItem>
         <GridItem
-          mt={{ base: "3", sm: "3" }}
+          mt={{ base: "3", sm: "0" }}
           rowStart={{ base: "1", sm: "2", md: "2" }}
         >
           <Text
