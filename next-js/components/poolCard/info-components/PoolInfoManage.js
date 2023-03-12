@@ -19,7 +19,7 @@ const PoolInfoManage = ({ contractAddr }) => {
   return (
     <>
       <Button
-        w={{ base: 10, md: 20 }}
+        w={{ base: 10, sm: 12, md: 20 }}
         onClick={onOpen}
         {...(isOpen ? { variant: "solid" } : { variant: "outline" })}
         colorScheme="primary"

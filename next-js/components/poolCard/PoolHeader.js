@@ -8,12 +8,12 @@ const PoolHeader = () => {
           Asset
         </Text>
       </GridItem>
-      <GridItem colStart={{ base: 4, sm: 4 }}>
+      <GridItem colStart={{ base: 3, sm: 4 }}>
         <Text ml={{ base: 0, md: 3 }} fontSize="lg" as="b">
           Protocols
         </Text>
       </GridItem>
-      <GridItem colStart={{ base: 6, sm: 7 }} ml={{ base: 0, sm: -2 }}>
+      <GridItem colStart={{ base: 5, sm: 7 }} ml={{ base: 0, sm: -2 }}>
         <Text fontSize="lg" as="b">
           APY
         </Text>

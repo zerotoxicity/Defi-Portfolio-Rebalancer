@@ -30,24 +30,24 @@ async function main() {
   console.log("⏳ Deploying..");
   //WETH
   await deployManageMultiple("WETH", wethContractAddress, "RMETH", "RME");
-  // await deployManageAave("WETH", wethContractAddress, "RAETH", "RAE");
-  // await deployManageCompWETH("WETH", wethContractAddress, "RCETH", "RCE");
-  // console.log("💰 WETH deployed!\n\n");
+  await deployManageAave("WETH", wethContractAddress, "RAETH", "RAE");
+  await deployManageCompWETH("WETH", wethContractAddress, "RCETH", "RCE");
+  console.log("💰 WETH deployed!\n\n");
 
-  // //DAI
-  // await deployManageMultiple("DAI", daiTokenAddress, "RMDAI", "RMD");
-  // await deployManageAave("DAI", daiTokenAddress, "RADAI", "RAD");
-  // await deployManageComp("DAI", daiTokenAddress, "RCDAI", "RCD");
-  // console.log("🪙 DAI deployed!\n\n");
+  //DAI
+  await deployManageMultiple("DAI", daiTokenAddress, "RMDAI", "RMD");
+  await deployManageAave("DAI", daiTokenAddress, "RADAI", "RAD");
+  await deployManageComp("DAI", daiTokenAddress, "RCDAI", "RCD");
+  console.log("🪙 DAI deployed!\n\n");
 
-  // await deployManageMultiple("WBTC", wbtcTokenAddress, "RMBTC", "RMB");
-  // await deployManageAave("WBTC", wbtcTokenAddress, "RABTC", "RAB");
-  // await deployManageComp("WBTC", wbtcTokenAddress, "RCBTC", "RCB");
+  await deployManageMultiple("WBTC", wbtcTokenAddress, "RMBTC", "RMB");
+  await deployManageAave("WBTC", wbtcTokenAddress, "RABTC", "RAB");
+  await deployManageComp("WBTC", wbtcTokenAddress, "RCBTC", "RCB");
   console.log("✅ All deployed!");
 
-  // const accounts = await ethers.getSigners();
-  // await addWETHToAccount(accounts[0], ethers.utils.parseEther("50"));
-  // console.log(accounts[0].address, " received 50 WETH");
+  const accounts = await ethers.getSigners();
+  await addWETHToAccount(accounts[0], ethers.utils.parseEther("50"));
+  console.log(accounts[0].address, " received 50 WETH");
 }
 
 //WETH
@@ -60,7 +60,7 @@ async function deployManageMultiple(assetName, assetAddr, name, symbol) {
     cTokenAddr,
     assetAddr,
   ]);
-  console.log("deployed rebalancer");
+  // console.log("deployed rebalancer");
   //Deploy both lending protocols
   const compContract =
     assetAddr === wethContractAddress ? "ManageCompWETH" : "ManageComp";
@@ -69,14 +69,12 @@ async function deployManageMultiple(assetName, assetAddr, name, symbol) {
     rebalancerTokenContract.address,
     assetAddr,
   ]);
-  console.log("deployed manageComp");
 
   manageAave = await deployContract("ManageAave", [
     aTokenAddr,
     rebalancerTokenContract.address,
     poolProviderAddress,
   ]);
-  console.log("deployed manageAave");
 
   manageProtocolsAddress = [manageComp.address, manageAave.address];
 
@@ -85,11 +83,11 @@ async function deployManageMultiple(assetName, assetAddr, name, symbol) {
   manageMultiple = await deployContract("ManageMultiple", [
     manageProtocolsAddress,
   ]);
-  console.log(
-    assetName,
-    "ManageMultiple is deployed to: ",
-    manageMultiple.address
-  );
+  // console.log(
+  //   assetName,
+  //   "ManageMultiple is deployed to: ",
+  //   manageMultiple.address
+  // );
   const allProtocols = [...manageProtocols, manageMultiple];
   for (const protocols of allProtocols) {
     await rebalancerTokenContract.setAuthorised(protocols.address, true);

@@ -6,7 +6,7 @@ import PoolInfoProtocol from "./info-components/PoolInfoProtocol";
 const PoolInfo = ({ asset, protocols, apy, contractAddr }) => {
   const maxAPY = Number(Math.max(...apy)).toFixed(2);
   return (
-    <Grid templateColumns="repeat(9,1fr)" m={3}>
+    <Grid templateColumns="repeat(9,1fr)" mt={{ base: 3, sm: 2 }}>
       <GridItem colStart={1}>
         <PoolInfoAsset asset={asset} />
       </GridItem>
@@ -14,9 +14,9 @@ const PoolInfo = ({ asset, protocols, apy, contractAddr }) => {
         <PoolInfoProtocol protocols={protocols} apy={apy} />
       </GridItem>
       <GridItem colStart={{ base: 7, sm: 7 }} mt={{ base: 3, sm: 5 }}>
-        <Text>{maxAPY}%</Text>
+        <Text fontSize={{ base: 12, sm: 15 }}>{maxAPY}%</Text>
       </GridItem>
-      <GridItem colStart={9} mt={{ base: 1, sm: 3 }}>
+      <GridItem colStart={9} mt={{ base: 1, sm: 3 }} mr={{ base: -4, sm: 0 }}>
         <PoolInfoManage contractAddr={contractAddr} />
       </GridItem>
     </Grid>

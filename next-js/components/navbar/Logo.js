@@ -7,8 +7,8 @@ const Logo = () => {
         borderRadius="full"
         mt={3}
         boxSize={{ base: 10, md: "50px" }}
-        src={"icons/WETH.png"}
-        alt="Rebalancer"
+        src={"icons/Rebalancer.png"}
+        alt="Rebalancer logo"
       />
       <Grid templateRows="repeat(3,1fr)">
         <GridItem rowStart={2}>

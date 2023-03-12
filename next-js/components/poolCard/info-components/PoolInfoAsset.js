@@ -11,7 +11,7 @@ const PoolInfoAsset = ({ asset }) => {
   }
 
   return (
-    <Stack direction="row" flexShrink={0}>
+    <Stack direction="row" flexShrink={0} ml={{ base: -5, sm: 0 }}>
       <Image
         mt={2}
         borderRadius="full"
@@ -21,19 +21,19 @@ const PoolInfoAsset = ({ asset }) => {
       />
 
       <Grid templateRows="repeat(2,1fr)">
-        <GridItem rowStart={1} w={{ base: "0%", md: "100%" }}>
+        <GridItem rowStart={1} w={{ base: "0%", md: "100%" }} mt={{ md: 1.5 }}>
           <Text as="b" fontSize={{ base: "0px", md: "lg" }}>
-            {/* {assetName === "DAI" && <Box mt={3} />} */}
+            {assetName === "DAI" && <Box mt={4} />}
             {assetName}
           </Text>
         </GridItem>
         <GridItem
-          mt={{ base: "3", sm: "0" }}
+          mt={{ base: "4", sm: "0" }}
           rowStart={{ base: "1", sm: "2", md: "2" }}
         >
           <Text
             color={{ base: "black", md: "gray" }}
-            fontSize={{ base: "12px", sm: "sm" }}
+            fontSize={{ base: "10px", sm: "sm" }}
           >
             {asset}
           </Text>

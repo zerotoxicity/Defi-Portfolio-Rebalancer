@@ -19,11 +19,13 @@ export const AuthContextProvider = (props) => {
   const [provider, setProvider] = useState("");
 
   const loginHandler = async () => {
-    var accounts = await window.ethereum.request({ method: "eth_accounts" });
+    const provider = await detectEthereumProvider();
+
+    var accounts = await provider.request({ method: "eth_accounts" });
 
     //Not connected
     if (!(accounts && accounts.length > 0)) {
-      accounts = await window.ethereum.request({
+      accounts = await provider.request({
         method: "eth_requestAccounts",
       });
     }
@@ -33,9 +35,9 @@ export const AuthContextProvider = (props) => {
     }
     setAddress(localStorage.getItem("address"));
     setUserLoggedIn(true);
-    const provider = new ethers.providers.Web3Provider(window.ethereum);
-    setProvider(provider);
-    setSigner(provider.getSigner());
+    const ethersProvider = new ethers.providers.Web3Provider(provider);
+    setProvider(ethersProvider);
+    setSigner(ethersProvider.getSigner());
   };
 
   const logoutHandler = () => {

@@ -2,7 +2,7 @@ pragma solidity 0.8.10;
 pragma experimental ABIEncoderV2;
 
 import {ILendingPoolAddressesProvider} from "./ILendingPoolAddressesProvider.sol";
-import {DataTypes} from "@aave/protocol-v2/contracts/protocol/libraries/types/DataTypes.sol";
+import {DataTypes} from "../library/DataTypes.sol";
 
 interface ILendingPool {
     /**
@@ -280,8 +280,10 @@ interface ILendingPool {
      * @param asset The address of the underlying asset deposited
      * @param useAsCollateral `true` if the user wants to use the deposit as collateral, `false` otherwise
      **/
-    function setUserUseReserveAsCollateral(address asset, bool useAsCollateral)
-        external;
+    function setUserUseReserveAsCollateral(
+        address asset,
+        bool useAsCollateral
+    ) external;
 
     /**
      * @dev Function to liquidate a non-healthy position collateral-wise, with Health Factor below 1
@@ -339,7 +341,9 @@ interface ILendingPool {
      * @return ltv the loan to value of the user
      * @return healthFactor the current health factor of the user
      **/
-    function getUserAccountData(address user)
+    function getUserAccountData(
+        address user
+    )
         external
         view
         returns (
@@ -366,55 +370,32 @@ interface ILendingPool {
 
     function setConfiguration(address reserve, uint256 configuration) external;
 
-    // /**
-    //  * @dev Returns the configuration of the reserve
-    //  * @param asset The address of the underlying asset of the reserve
-    //  * @return The configuration of the reserve
-    //  **/
-    // function getConfiguration(address asset)
-    //     external
-    //     view
-    //     returns (DataTypes.ReserveConfigurationMap memory);
-
-    // /**
-    //  * @dev Returns the configuration of the user across all the reserves
-    //  * @param user The user address
-    //  * @return The configuration of the user
-    //  **/
-    // function getUserConfiguration(address user)
-    //     external
-    //     view
-    //     returns (DataTypes.UserConfigurationMap memory);
-
     /**
      * @dev Returns the normalized income normalized income of the reserve
      * @param asset The address of the underlying asset of the reserve
      * @return The reserve's normalized income
      */
-    function getReserveNormalizedIncome(address asset)
-        external
-        view
-        returns (uint256);
+    function getReserveNormalizedIncome(
+        address asset
+    ) external view returns (uint256);
 
     /**
      * @dev Returns the normalized variable debt per unit of asset
      * @param asset The address of the underlying asset of the reserve
      * @return The reserve normalized variable debt
      */
-    function getReserveNormalizedVariableDebt(address asset)
-        external
-        view
-        returns (uint256);
+    function getReserveNormalizedVariableDebt(
+        address asset
+    ) external view returns (uint256);
 
     /**
      * @dev Returns the state and configuration of the reserve
      * @param asset The address of the underlying asset of the reserve
      * @return The state of the reserve
      **/
-    function getReserveData(address asset)
-        external
-        view
-        returns (DataTypes.ReserveData memory);
+    function getReserveData(
+        address asset
+    ) external view returns (DataTypes.ReserveData memory);
 
     function finalizeTransfer(
         address asset,

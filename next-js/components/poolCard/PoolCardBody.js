@@ -1,4 +1,4 @@
-import { Box, CardBody } from "@chakra-ui/react";
+import { Box, CardBody, Skeleton } from "@chakra-ui/react";
 import {
   AssetAddressEnum,
   manageContractAddresses,
@@ -56,7 +56,8 @@ const PoolCardBody = () => {
   }, [authContext.signer]);
 
   return (
-    <CardBody mb={3}>
+    <CardBody mb={3} mt={{ base: -3, sm: -5 }}>
+      {!isLoaded && <Skeleton h={10} />}
       {isLoaded
         ? Object.keys(manageContractsDetails).map((item, index) => {
             return (

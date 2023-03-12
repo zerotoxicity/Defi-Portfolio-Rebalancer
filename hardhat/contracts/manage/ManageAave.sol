@@ -5,7 +5,7 @@ import "../interfaces/IAToken.sol";
 import "../interfaces/ILendingPoolAddressesProvider.sol";
 import "../interfaces/ILendingPool.sol";
 import "../ALendingProtocol.sol";
-import {DataTypes} from "@aave/protocol-v2/contracts/protocol/libraries/types/DataTypes.sol";
+import {DataTypes} from "../library/DataTypes.sol";
 
 contract ManageAave is ALendingProtocol {
     address private _poolProviderAddr;
