@@ -11,8 +11,8 @@ import AuthContext from "store/auth-context";
 import PoolInfo from "./PoolInfo";
 
 const PoolCardBody = () => {
-  const [isLoaded, setIsLoaded] = useState(false);
   const authContext = useContext(AuthContext);
+  const [isLoaded, setIsLoaded] = useState(false);
   const [manageContractsDetails, setManageContractDetails] = useState([]);
 
   useEffect(() => {
@@ -57,8 +57,8 @@ const PoolCardBody = () => {
 
   return (
     <CardBody mb={3} mt={{ base: -3, sm: -5 }}>
-      {!isLoaded && <Skeleton h={10} />}
-      {isLoaded
+      {(!isLoaded || !authContext.address) && <Skeleton h={10} />}
+      {isLoaded && authContext.address
         ? Object.keys(manageContractsDetails).map((item, index) => {
             return (
               <PoolInfo

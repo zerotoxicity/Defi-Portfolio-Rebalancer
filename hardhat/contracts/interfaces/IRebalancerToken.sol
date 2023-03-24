@@ -24,4 +24,6 @@ interface IRebalancerToken {
         address acount,
         uint256 amount
     ) external returns (uint256);
+
+    function transferPToken(address oldProtocol) external returns (uint256);
 }

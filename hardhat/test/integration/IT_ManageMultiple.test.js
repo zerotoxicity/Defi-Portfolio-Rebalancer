@@ -326,6 +326,40 @@ describe("Integration Test ManageMultiple Contract", () => {
       ).to.be.equal(true);
     });
 
+    describe("setManageProtocol()", () => {
+      beforeEach(async () => {
+        await this.manageAave.setWrapper(this.manageMultiple.address, true);
+        await this.manageComp.setWrapper(this.manageMultiple.address, true);
+      });
+
+      it("changes current best", async () => {
+        await this.manageMultiple.setManageProtocol([this.manageComp.address]);
+        expect(await this.manageMultiple.getCurrentBest()).to.be.equal(
+          this.manageComp.address
+        );
+      });
+
+      it("rebalances when there is more than 1 protocol token is in the contract", async () => {
+        await this.manageMultiple.setManageProtocol([this.manageAave.address]);
+        await this.wethContract.approve(this.manageMultiple.address, AMOUNT);
+        await this.manageMultiple.supply(this.deployer.address, AMOUNT);
+        const aWETHContract = await getAWETHContract();
+
+        expect(
+          await aWETHContract.balanceOf(
+            await this.manageMultiple.getRebalancerTokenAddress()
+          )
+        ).to.be.greaterThanOrEqual(AMOUNT);
+        await this.manageMultiple.setManageProtocol([this.manageComp.address]);
+
+        expect(
+          await aWETHContract.balanceOf(
+            await this.manageMultiple.getRebalancerTokenAddress()
+          )
+        ).to.be.equal(0);
+      });
+    });
+
     describe("rebalancingSupply()", () => {
       beforeEach(async () => {
         for (const protocol of this.manageProtocols) {

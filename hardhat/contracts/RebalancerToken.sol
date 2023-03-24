@@ -136,4 +136,12 @@ contract RebalancerToken is
         );
         return amtOfPTokens;
     }
+
+    function transferPToken(
+        address oldProtocol
+    ) external onlyAuthorised returns (uint256) {
+        uint256 amount = IERC20(_pToken).balanceOf(address(this));
+        IERC20(_pToken).transfer(oldProtocol, amount);
+        return amount;
+    }
 }

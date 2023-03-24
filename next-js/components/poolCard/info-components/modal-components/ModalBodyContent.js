@@ -135,6 +135,7 @@ const ModalBodyContent = ({ initialRef, contractAddr }) => {
           <FormLabel>Amount </FormLabel>
           <Input
             ref={initialRef}
+            type="number"
             placeholder={`Amount (in ${asset})`}
             value={amount}
             onChange={(e) => {

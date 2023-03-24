@@ -49,6 +49,14 @@ describe("Manage Multiple contract", () => {
     });
   });
 
+  describe("setManageProtocol()", () => {
+    it("reverts when it is not called by the owner", async () => {
+      await expect(
+        this.manageMultiple.setManageProtocol([this.fakeManageComp.address])
+      ).to.be.reverted;
+    });
+  });
+
   describe("📈 getAPR()", () => {
     it("returns current APR", async () => {
       expect(await this.manageMultiple.getAPR()).to.be.equal(2);

@@ -94,8 +94,7 @@ contract ManageMultiple is
                 IERC20(pToken).balanceOf(_rebalancerToken) > 0 &&
                 IERC20(_rebalancerToken).totalSupply() > 0
             ) {
-                IALendingProtocol(_currentBest).rebalancingWithdraw(nextBest);
-                IALendingProtocol(nextBest).rebalancingSupply();
+                _rebWithSupply(nextBest);
             }
             IRebalancerToken(_rebalancerToken).setpToken(
                 IALendingProtocol(nextBest).getpToken()
@@ -200,11 +199,17 @@ contract ManageMultiple is
                     newBest = manageProtocols[i];
                 }
             }
-            IALendingProtocol(_currentBest).rebalancingWithdraw(newBest);
-            IALendingProtocol(newBest).rebalancingSupply();
-            IRebalancerToken(_rebalancerToken).setpToken(
-                IALendingProtocol(newBest).getpToken()
-            );
+            if (
+                IERC20(IALendingProtocol(_currentBest).getpToken()).balanceOf(
+                    _rebalancerToken
+                ) != 0
+            ) {
+                _rebWithSupply(newBest);
+                IRebalancerToken(_rebalancerToken).setpToken(
+                    IALendingProtocol(newBest).getpToken()
+                );
+            }
+            _currentBest = newBest;
         }
         _manageProtocols = manageProtocols;
     }
@@ -225,5 +230,11 @@ contract ManageMultiple is
         uint256 balance = IERC20(_asset).balanceOf(address(this));
         IERC20(_asset).approve(nextRebalancer, balance);
         ILendingProtocolCore(nextRebalancer).supply(msg.sender, balance);
+    }
+
+    function _rebWithSupply(address nextBest) private {
+        IRebalancerToken(_rebalancerToken).transferPToken(_currentBest);
+        IALendingProtocol(_currentBest).rebalancingWithdraw(nextBest);
+        IALendingProtocol(nextBest).rebalancingSupply();
     }
 }
