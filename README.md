@@ -27,7 +27,7 @@ Includes a nextJS frontend to interact with the smart contracts.
    npm install
    ```
 
-2. **_[For running debug only]_** Install nextJS package dependencies.
+2. Install nextJS package dependencies.
 
    ```bash
    cd ../next-js
@@ -50,7 +50,7 @@ Includes a nextJS frontend to interact with the smart contracts.
    npx hardhat node
    ```
 
-3. Switch MetaMask network to localhost
+3. Switch MetaMask network to Hardhat network (localhost)
 
    > [Step-by-step guide of adding Hardhat network to metamask](https://support.chainstack.com/hc/en-us/articles/4408642503449-Using-MetaMask-with-a-Hardhat-node)
 
@@ -105,35 +105,50 @@ Includes a nextJS frontend to interact with the smart contracts.
 
    Each paragraph of addresses corresponds to its respective position in the dashboard's pool list.
    ![Dashboard](images/Dashboard.png)
-   The first pool, which leverages both Compound and Aave, in the image has the contract address of `0xE7FF84Df24A9a252B6E8A5BB093aC52B1d8bEEdf` and its rTokens contract is deployed to the address `0x7036124464A2d2447516309169322c8498ac51e3`. After making a transaction with the first pool, the balance of rToken will be changed. And, to view the updated balance, the user has to import `0x7036124464A2d2447516309169322c8498ac51e3` into MetaMask.
+   The first pool, which has Compound and Aave logo in the image, has the contract address of `0xE7FF84Df24A9a252B6E8A5BB093aC52B1d8bEEdf` and its rTokens contract is deployed to the address `0x7036124464A2d2447516309169322c8498ac51e3`. After making a transaction with the first pool, the balance of rToken will be changed. And, to view the updated balance, the user has to import `0x7036124464A2d2447516309169322c8498ac51e3` into MetaMask.
 
    Continuing from the generated text above, the address of rToken of the second pool, which only utilize Aave, is `0xB1c05b498Cb58568B2470369FEB98B00702063dA`.
 
-8. Fund HardHat Account #0 with 50 ETH worth of WETH, DAI, and WBTC.
+   <br/>
+
+8. Using the guide from Step 7, import WETH, DAI, and WBTC into MetaMask wallet
+
+   WETH address: `0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2`
+
+   DAI address: `0x6b175474e89094c44da98b954eedeac495271d0f`
+
+   WBTC address: `0x2260fac5e5542a773aa44fbcfedf7c193bc2c599`
+
+<br/>
+
+9. Fund HardHat Account #0 with 50 ETH worth of WETH, DAI, and WBTC.
 
    ```bash
    npx hardhat run scripts/fund-account.js --network localhost
    ```
 
-9. Enter `next-js` folder
+10. Enter `next-js` folder
 
-   ```bash
-   cd ../next-js
-   ```
+    ```bash
+    cd ../next-js
+    ```
 
-10. Run the frontend
+11. Run the frontend
 
     ```bash
     npm run dev
     ```
 
-11. Launch a browser with MetaMask extension and access the url:
+12. Launch a browser with MetaMask extension and access the url:
 
     ```
     localhost:3000
     ```
 
-12. Login with Hardhat Account #0 to access Rebalancer's functionalities.
+13. Login with Hardhat Account #0 to access Rebalancer's functionalities.
+
+14. When using Rebalancer functionalities, such as Deposit, MetaMask will prompt the user for custom spending cap.
+    > Select the "Use default" option
 
 ---
 
@@ -141,7 +156,7 @@ Includes a nextJS frontend to interact with the smart contracts.
 
 **Upon logging in and waiting for a minute, yet no pools are displayed.**
 
-Check the first terminal, if the error is regarding invalid block tag. Reset Hardhat Account #0, using the [guide](https://support.metamask.io/hc/en-us/articles/360015488891-How-to-reset-an-account).
+Check the first terminal, if the error is regarding invalid block tag - Reset Hardhat Account #0, using the [guide](https://support.metamask.io/hc/en-us/articles/360015488891-How-to-reset-an-account).
 <br/><br/><br/>
 **When transactions are not going through due to invalid nonce**
 

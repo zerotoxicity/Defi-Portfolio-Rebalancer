@@ -26,6 +26,7 @@ describe("Integration Rebalancer Token contract", () => {
     //--Deployment--
 
     this.rebalancerTokenContract = await deployContract("RebalancerToken", [
+      18,
       "RAaveWETH",
       "RAWETH",
       this.aWethContractAddress,

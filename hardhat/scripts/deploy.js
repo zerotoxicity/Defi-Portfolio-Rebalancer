@@ -80,19 +80,22 @@ async function main() {
     "WBTC",
     wbtcTokenAddress,
     "RMBTC",
-    "RMB"
+    "RMB",
+    true
   );
   const BTC_A = await deployManageAave(
     "WBTC",
     wbtcTokenAddress,
     "RABTC",
-    "RAB"
+    "RAB",
+    true
   );
   const BTC_C = await deployManageComp(
     "WBTC",
     wbtcTokenAddress,
     "RCBTC",
-    "RCB"
+    "RCB",
+    true
   );
   const WBTC_Contracts = {
     manageMultiple: BTC_M,
@@ -104,7 +107,7 @@ async function main() {
   contractsObj["DAI"] = DAI_Contracts;
   contractsObj["WBTC"] = WBTC_Contracts;
   const contractsJSON = JSON.stringify(contractsObj);
-  fs.writeFile(
+  fs.writeFileSync(
     __dirname + "/../../next-js/helper/contractAddresses.js",
     "export const addresses = " + contractsJSON,
     "utf8",
@@ -118,10 +121,18 @@ async function main() {
 }
 
 //Deploy a contract with Rebalancing features, and its token contract
-async function deployManageMultiple(assetName, assetAddr, name, symbol) {
+async function deployManageMultiple(
+  assetName,
+  assetAddr,
+  name,
+  symbol,
+  isWBTC = false
+) {
+  const mantissa = isWBTC ? 8 : 18;
   let aTokenAddr = tokenAddrObj[assetAddr][0];
   let cTokenAddr = tokenAddrObj[assetAddr][1];
   rebalancerTokenContract = await deployContract("RebalancerToken", [
+    mantissa,
     name,
     symbol,
     cTokenAddr,
@@ -170,9 +181,17 @@ async function deployManageMultiple(assetName, assetAddr, name, symbol) {
 }
 
 //Deploy a contract that leverages Aave, and its token contract
-async function deployManageAave(assetName, assetAddr, name, symbol) {
+async function deployManageAave(
+  assetName,
+  assetAddr,
+  name,
+  symbol,
+  isWBTC = false
+) {
+  const mantissa = isWBTC ? 8 : 18;
   let aTokenAddr = tokenAddrObj[assetAddr][0];
   rebalancerTokenContract = await deployContract("RebalancerToken", [
+    mantissa,
     name,
     symbol,
     aTokenAddr,
@@ -196,9 +215,17 @@ async function deployManageAave(assetName, assetAddr, name, symbol) {
 }
 
 //Deploy a contract that leverages Compound (ETH ONLY), and its token contract
-async function deployManageCompWETH(assetName, assetAddr, name, symbol) {
+async function deployManageCompWETH(
+  assetName,
+  assetAddr,
+  name,
+  symbol,
+  isWBTC = false
+) {
+  const mantissa = isWBTC ? 8 : 18;
   let cETHContractAddress = tokenAddrObj[assetAddr][1];
   rebalancerTokenContract = await deployContract("RebalancerToken", [
+    mantissa,
     name,
     symbol,
     cETHContractAddress,
@@ -223,10 +250,11 @@ async function deployManageCompWETH(assetName, assetAddr, name, symbol) {
 }
 
 //Deploy a contract that leverages Compound, and its token contract
-async function deployManageComp(assetName, assetAddr, name, symbol) {
+async function deployManageComp(assetName, assetAddr, name, symbol, isWBTC) {
   let cTokenAddr = tokenAddrObj[assetAddr][1];
-
+  const mantissa = isWBTC ? 8 : 18;
   rebalancerTokenContract = await deployContract("RebalancerToken", [
+    mantissa,
     name,
     symbol,
     cTokenAddr,

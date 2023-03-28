@@ -26,6 +26,7 @@ describe("Integration ManageAave contract", () => {
     //--Deployment--
 
     this.rebalancerTokenContract = await deployContract("RebalancerToken", [
+      18,
       "RAaveWETH",
       "RAWETH",
       this.aWethContractAddress,
@@ -158,6 +159,7 @@ describe("Integration ManageAave contract", () => {
 
     it("fails when it is not deployed by the same owner", async () => {
       this.rebalancerTokenContract2 = await deployContract("RebalancerToken", [
+        18,
         "RCompETH",
         "RCETH",
         this.cETHContractAddress,
@@ -194,6 +196,7 @@ describe("Integration ManageAave contract", () => {
       this.cDAITokenAddress = networkConfig[network.config.chainId].cDAIToken;
 
       this.rebalancerTokenContract2 = await deployContract("RebalancerToken", [
+        18,
         "RCompDAI",
         "RCDAI",
         this.cDAITokenAddress,
@@ -217,6 +220,7 @@ describe("Integration ManageAave contract", () => {
 
     it("moves successfully to another Rebalancer", async () => {
       this.rebalancerTokenContract2 = await deployContract("RebalancerToken", [
+        18,
         "RCompETH",
         "RCETH",
         this.cETHContractAddress,

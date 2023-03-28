@@ -2,7 +2,6 @@ pragma solidity 0.8.10;
 
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "./interfaces/rebalancer/ILendingProtocolCore.sol";
-import "./interfaces/IERC20Detailed.sol";
 import "./interfaces/ICToken.sol";
 import "./ALendingProtocol.sol";
 import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
@@ -25,7 +24,7 @@ contract RebalancerToken is
     //Underlying asset e.g., WETH
     address private _underlying;
     address private _manageProtocol;
-    uint256 private mantissa;
+    uint256 private _mantissa;
     mapping(address => bool) _authorised;
 
     /// Modifier to check that if msg.sender is authorised to invoke Rebalancer Token functions
@@ -36,12 +35,14 @@ contract RebalancerToken is
 
     /**
      * Constructor
+     * @param mantissa Number of decimal places for rToken
      * @param name Name of token
      * @param symbol Symbol of token
      * @param pToken Address of the protocol, that Rebalancer is currently farming yield on, token
      * @param underlying Address of underlying asset
      */
     function initialize(
+        uint8 mantissa,
         string memory name,
         string memory symbol,
         address pToken,
@@ -53,14 +54,14 @@ contract RebalancerToken is
         _pToken = pToken;
         _underlying = underlying;
         _authorised[msg.sender] = true;
-        mantissa = IERC20Detailed(pToken).decimals();
+        _mantissa = mantissa;
     }
 
     /**
      * Decimals of the token
      */
     function decimals() public view override returns (uint8) {
-        return uint8(mantissa);
+        return uint8(_mantissa);
     }
 
     function _authorizeUpgrade(address) internal override onlyOwner {}
@@ -113,7 +114,7 @@ contract RebalancerToken is
     function rToPtokenConversionRate() public view returns (uint256) {
         uint256 pTokenAmount = IERC20(_pToken).balanceOf(address(this));
         if (pTokenAmount == 0 || totalSupply() == 0) return 0;
-        return (pTokenAmount * mantissa) / totalSupply();
+        return (pTokenAmount * 10 ** _mantissa) / totalSupply();
     }
 
     /**
@@ -132,7 +133,7 @@ contract RebalancerToken is
      */
     function getRebalancerPrice() public view virtual returns (uint256 price) {
         price = ((rToPtokenConversionRate() * _getConversionRate())); //Price in underlying asset
-        if (_getConversionRate() != 1) price /= mantissa;
+        if (_getConversionRate() != 1) price /= 10 ** _mantissa;
     }
 
     ///@inheritdoc IRebalancerToken
@@ -144,9 +145,8 @@ contract RebalancerToken is
         uint256 mintAmount;
         if (totalSupply() != 0) {
             //msg.sender will be the pool contract
-            mintAmount = (amount * mantissa) / getRebalancerPrice();
+            mintAmount = (amount * 10 ** _mantissa) / getRebalancerPrice();
         } else if (totalSupply() == 0) {
-            console.log(amount);
             mintAmount = amount;
         }
         _mint(account, mintAmount);
@@ -160,7 +160,7 @@ contract RebalancerToken is
         require(totalSupply() > 0 && amount > 0, "No token to withdraw");
         //Convert rebalancerToken to protocol Tokens
         uint256 amt = amount * rToPtokenConversionRate();
-        uint256 amtOfPTokens = amt / mantissa;
+        uint256 amtOfPTokens = amt / 10 ** _mantissa;
 
         _burn(account, amount);
         address currentBest = ILendingProtocolCore(_manageProtocol)

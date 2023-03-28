@@ -25,6 +25,7 @@ describe("Integration Test ManageMultiple Contract", () => {
 
     //--Deployment--
     this.rebalancerTokenContract = await deployContract("RebalancerToken", [
+      18,
       "RCompETH",
       "RCETH",
       this.cETHContractAddress,
@@ -215,6 +216,7 @@ describe("Integration Test ManageMultiple Contract", () => {
 
     it("fails when it is not deployed by the same owner", async () => {
       this.rebalancerTokenContract2 = await deployContract("RebalancerToken", [
+        18,
         "RCompETH",
         "RCETH",
         this.cETHContractAddress,
@@ -253,6 +255,7 @@ describe("Integration Test ManageMultiple Contract", () => {
       this.cDAITokenAddress = networkConfig[network.config.chainId].cDAIToken;
 
       this.rebalancerTokenContract2 = await deployContract("RebalancerToken", [
+        18,
         "RCompDAI",
         "RCDAI",
         this.cDAITokenAddress,
@@ -279,6 +282,7 @@ describe("Integration Test ManageMultiple Contract", () => {
 
     it("moves successfully to another Rebalancer", async () => {
       this.rebalancerTokenContract2 = await deployContract("RebalancerToken", [
+        18,
         "RAaveWETH",
         "RAWETH",
         this.aWethContractAddress,

@@ -17,6 +17,7 @@ describe("ManageCompWETH contract", () => {
 
     //Deploy
     this.rebalancerTokenContract = await deployContract("RebalancerToken", [
+      18,
       "RCompETH",
       "RCETH",
       this.fakeCeth.address,

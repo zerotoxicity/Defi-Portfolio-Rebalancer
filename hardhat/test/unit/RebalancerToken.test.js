@@ -17,6 +17,7 @@ describe("💰 Rebalancer Token", () => {
     this.fakeaWETH = await smock.fake("IAToken");
 
     this.rebalancerTokenContract = await deployContract("RebalancerToken", [
+      18,
       "RAave-WETH",
       "RAWE",
       this.fakeaWETH.address,

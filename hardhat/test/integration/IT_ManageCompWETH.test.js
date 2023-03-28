@@ -20,6 +20,7 @@ describe("Integration ManageCompWETH contract", () => {
 
     //--Deployment--
     this.rebalancerTokenContract = await deployContract("RebalancerToken", [
+      18,
       "RCompETH",
       "RCETH",
       this.cETHContractAddress,

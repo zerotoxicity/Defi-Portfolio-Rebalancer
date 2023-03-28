@@ -25,6 +25,7 @@ describe("Integration ManageComp contract", () => {
 
     //--Deployment--
     this.rebalancerTokenContract = await deployContract("RebalancerToken", [
+      18,
       "RCompDAI",
       "RCDAI",
       this.cDAITokenAddress,
