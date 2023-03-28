@@ -344,19 +344,37 @@ describe("Integration Test ManageMultiple Contract", () => {
         await this.wethContract.approve(this.manageMultiple.address, AMOUNT);
         await this.manageMultiple.supply(this.deployer.address, AMOUNT);
         const aWETHContract = await getAWETHContract();
-
+        const cETHToken = await ethers.getContractAt(
+          "ICETH",
+          networkConfig[network.config.chainId].cETHToken,
+          accounts[0]
+        );
+        //Check the amount of aWETH is above the deposited amount
         expect(
           await aWETHContract.balanceOf(
             await this.manageMultiple.getRebalancerTokenAddress()
           )
         ).to.be.greaterThanOrEqual(AMOUNT);
-        await this.manageMultiple.setManageProtocol([this.manageComp.address]);
 
+        expect(
+          await cETHToken.balanceOf(
+            await this.manageMultiple.getRebalancerTokenAddress()
+          )
+        ).to.be.equal(0);
+
+        await this.manageMultiple.setManageProtocol([this.manageComp.address]);
+        //Confirm the amount of aWETH is zero-ed
         expect(
           await aWETHContract.balanceOf(
             await this.manageMultiple.getRebalancerTokenAddress()
           )
         ).to.be.equal(0);
+
+        expect(
+          await cETHToken.balanceOf(
+            await this.manageMultiple.getRebalancerTokenAddress()
+          )
+        ).to.be.greaterThan(0);
       });
     });
 

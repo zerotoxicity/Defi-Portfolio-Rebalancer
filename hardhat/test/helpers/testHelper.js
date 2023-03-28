@@ -67,6 +67,23 @@ async function addDaiToAccount(signer, amount) {
   await tx.wait(1);
 }
 
+async function addWBTCToAccount(signer, amount) {
+  wethContractAddress = networkConfig[network.config.chainId].WETHToken;
+  wBTCTokenAddress = networkConfig[network.config.chainId].wBTCToken;
+
+  routerContract = await getUniswapRouterContract();
+  const tx = await routerContract
+    .connect(signer)
+    .swapExactETHForTokens(
+      0,
+      [wethContractAddress, wBTCTokenAddress],
+      signer.address,
+      1703490033,
+      { value: amount }
+    );
+  await tx.wait(1);
+}
+
 async function addWETHToAccount(signer, amount) {
   wethContractAddress = networkConfig[network.config.chainId].WETHToken;
 
@@ -88,5 +105,6 @@ module.exports = {
   getWeth,
   getUniswapRouterContract,
   addDaiToAccount,
+  addWBTCToAccount,
   addWETHToAccount,
 };

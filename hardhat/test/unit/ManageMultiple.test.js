@@ -115,7 +115,7 @@ describe("Manage Multiple contract", () => {
       );
     });
   });
-  describe("Rebalance", () => {
+  describe("Rebalance()", () => {
     it("does not occur when there's no protocol with a bigger APR", async () => {
       this.fakeWeth.balanceOf.returns(0);
 

@@ -3,6 +3,8 @@ const { networkConfig } = require("../helper-hardhat-config");
 const {
   deployContract,
   addWETHToAccount,
+  addWBTCToAccount,
+  addDaiToAccount,
 } = require("../test/helpers/testHelper");
 
 const poolProviderAddress =
@@ -47,7 +49,9 @@ async function main() {
 
   const accounts = await ethers.getSigners();
   await addWETHToAccount(accounts[0], ethers.utils.parseEther("50"));
-  console.log(accounts[0].address, " received 50 WETH");
+  await addWBTCToAccount(accounts[0], ethers.utils.parseEther("50"));
+  await addDaiToAccount(accounts[0], ethers.utils.parseEther("50"));
+  // console.log(accounts[0].address, " received 50 WETH");
 }
 
 //WETH
@@ -60,7 +64,6 @@ async function deployManageMultiple(assetName, assetAddr, name, symbol) {
     cTokenAddr,
     assetAddr,
   ]);
-  // console.log("deployed rebalancer");
   //Deploy both lending protocols
   const compContract =
     assetAddr === wethContractAddress ? "ManageCompWETH" : "ManageComp";

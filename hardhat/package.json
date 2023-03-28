@@ -34,6 +34,7 @@
   },
   "scripts": {
     "solhint": "./node_modules/.bin/solhint -f table contracts/**/*.sol",
-    "deploy": "yarn hardhat run scripts/deploy.js"
+    "deploy": "yarn hardhat run scripts/deploy.js",
+    "node": "yarn hardhat node --hostname 0.0.0.0 --port 8545"
   }
 }

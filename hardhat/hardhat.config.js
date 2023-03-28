@@ -29,7 +29,8 @@ module.exports = {
     ],
   },
   gasReporter: {
-    enabled: process.env.REPORT_GAS ? true : false,
+    // enabled: process.env.REPORT_GAS ? true : false,
+    enabled: false,
   },
   defaultNetwork: "hardhat",
   networks: {
