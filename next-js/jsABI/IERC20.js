@@ -1,3 +1,6 @@
+/**
+ * ABI of IERC20 in JSON format
+ */
 export const IERC20_ABI = `[
     {
         "constant": true,

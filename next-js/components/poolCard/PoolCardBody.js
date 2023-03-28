@@ -1,5 +1,8 @@
 import { Box, CardBody, Skeleton } from "@chakra-ui/react";
-import { AssetAddressEnum, manageContractAddresses } from "helper/constants";
+import {
+  AssetAddressEnum,
+  rebalancerContractAddresses,
+} from "helper/constants";
 import { calculateAPYArr } from "helper/helperFunctions";
 import { ethers } from "ethers";
 import { ILENDINGPROTOCOL_ABI } from "jsABI/ILendingProtocolCore";
@@ -7,17 +10,25 @@ import { useContext, useEffect, useState } from "react";
 import AuthContext from "store/auth-context";
 import PoolInfo from "./PoolInfo";
 
+/**
+ * Card body component displays all of the pool
+ * It will display a skeleton component when the contracts are not fully loaded or user has not signed in
+ */
 const PoolCardBody = () => {
   const authContext = useContext(AuthContext);
   const [isLoaded, setIsLoaded] = useState(false);
   const [manageContractsDetails, setManageContractDetails] = useState([]);
 
+  /**Retrieves all Rebalancer contracts on render
+   * Re-render everytime if the signer is changed
+   */
   useEffect(() => {
     const fetchData = async () => {
       const detailsArr = [];
 
-      for (var i = 0; i < manageContractAddresses.contracts.length; i++) {
-        var contracts = manageContractAddresses.contracts[i];
+      //Read all contract addresses and get all instances of Rebalancer contracts
+      for (var i = 0; i < rebalancerContractAddresses.contracts.length; i++) {
+        var contracts = rebalancerContractAddresses.contracts[i];
         const keyArr = Object.keys(contracts.addr);
         for (var j = 0; j < keyArr.length; j++) {
           const address = keyArr[j];
@@ -26,6 +37,8 @@ const PoolCardBody = () => {
             ILENDINGPROTOCOL_ABI,
             authContext.signer
           );
+
+          //Get information from the contract
           const asset = (await manageContract.getAsset()).toLowerCase();
 
           const protocolArr = await manageContract.getProtocols();
@@ -33,6 +46,7 @@ const PoolCardBody = () => {
           const allAPR = await manageContract.getAllAPR();
           const allAPY = calculateAPYArr(allAPR);
 
+          //Add the information to an contract object
           const contractObj = {
             asset: AssetAddressEnum[asset],
             protocolArr: protocolArr,

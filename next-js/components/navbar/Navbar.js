@@ -6,9 +6,14 @@ import AuthContext from "store/auth-context";
 import { useContext, useEffect } from "react";
 import ProfileMenu from "./ProfileMenu";
 
+/**
+ * Navbar component that displays Rebalancer logo and name, and user details
+ * @component
+ */
 const Navbar = () => {
   const authContext = useContext(AuthContext);
 
+  //Request user to login if user has not logged in before
   useEffect(() => {
     if (localStorage.getItem("address") !== null) {
       authContext.login();

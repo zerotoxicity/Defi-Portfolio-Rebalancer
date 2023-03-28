@@ -1,10 +1,10 @@
 import { addresses } from "./contractAddresses";
-
-// Leveraged protocols
-export const ProtocolsEnum = {
-  AAVE: "AAVE",
-  COMP: "COMP",
-};
+/**
+ * This file contains:
+ * - fixed protocol names
+ * - addresses of ERC20 token in respective network
+ * - structure of Rebalancer addresses
+ */
 
 // Tokens' symbol and name
 export const TokensEnum = {
@@ -25,12 +25,13 @@ export const AssetAddressEnum = {
   "0xf4423f4152966ebb106261740da907662a3569c5": "WBTC",
 };
 
+// Addresses of Rebalancer contracts separated by asset type
 const WETH_Contracts = addresses.WETH;
 const DAI_Contracts = addresses.DAI;
 const WBTC_Contracts = addresses.WBTC;
 
 // Object containing all Rebalancer and rToken contract addresses
-export const manageContractAddresses = {
+export const rebalancerContractAddresses = {
   contracts: [
     {
       // Contracts with WETH asset
@@ -74,4 +75,5 @@ export const manageContractAddresses = {
   ],
 };
 
+//Seconds in a year, used to calculate APY
 export const SECONDS_PER_YEAR = 31536000;

@@ -4,7 +4,10 @@ import { Heading, Box, Stack, Text } from "@chakra-ui/react";
 import AuthContext from "store/auth-context";
 import { ChevronDownIcon } from "@chakra-ui/icons";
 
-// Get user's metamask Jazzicon
+/**
+ * Simple component that displays the user's avatar, trimmed wallet address, and a down chevron
+ * @component
+ */
 const ProfileIcon = () => {
   const authContext = useContext(AuthContext);
   const address = authContext.address;

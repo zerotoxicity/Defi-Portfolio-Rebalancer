@@ -4,8 +4,8 @@ import "./ILendingProtocolCore.sol";
 
 interface IALendingProtocol is ILendingProtocolCore {
     /**
-     * Set the bool value of the Rebalancer contract that is leveraging this contract
-     * @param wrapperAddr Address of a Rebalancer contract with rebalancing feature
+     * Set the bool value of the Rebalancer pool contract that is leveraging this contract
+     * @param wrapperAddr Address of a Rebalancer pool contract with rebalancing feature
      * @param value bool
      */
     function setWrapper(address wrapperAddr, bool value) external;
@@ -17,7 +17,7 @@ interface IALendingProtocol is ILendingProtocolCore {
 
     /**
      * Withdraw from protocol and transfers the funds to nextBest
-     * @param nextBest Address of the Rebalancer contract with the best APY
+     * @param nextBest Address of the Rebalancer pool contract with the best APY
      */
     function rebalancingWithdraw(address nextBest) external;
 }

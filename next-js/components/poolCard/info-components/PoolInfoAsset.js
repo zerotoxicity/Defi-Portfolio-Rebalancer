@@ -1,6 +1,20 @@
 import { Box, Grid, GridItem, Image, Stack, Text } from "@chakra-ui/react";
 import { TokensEnum } from "helper/constants";
 
+/**
+ * This component is part of the PoolInfo component
+ * It displays the asset logo, name, and symbol
+ * @component
+ *
+ * @example
+ * //Sample usage
+ * <PoolinfoAsset
+ *  asset = "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2"
+ * />
+ *
+ * @param {*} asset address of the asset
+ * @returns
+ */
 const PoolInfoAsset = ({ asset }) => {
   const enumKeys = Object.keys(TokensEnum);
   let assetName = "PLACEHOLDER";

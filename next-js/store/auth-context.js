@@ -2,6 +2,9 @@ import React, { useEffect, useState } from "react";
 import { ethers } from "ethers";
 import detectEthereumProvider from "@metamask/detect-provider";
 
+/**
+ * Context store, used to persist data
+ */
 const AuthContext = React.createContext({
   isLoggedIn: false,
   address: "",
@@ -9,7 +12,7 @@ const AuthContext = React.createContext({
   provider: "",
   login: () => {},
   logout: () => {},
-  switchAccount: () => {},
+  // switchAccount: () => {},
 });
 
 export const AuthContextProvider = (props) => {
@@ -18,6 +21,7 @@ export const AuthContextProvider = (props) => {
   const [signer, setSigner] = useState("");
   const [provider, setProvider] = useState("");
 
+  //Login function
   const loginHandler = async () => {
     const provider = await detectEthereumProvider();
 
@@ -29,7 +33,7 @@ export const AuthContextProvider = (props) => {
         method: "eth_requestAccounts",
       });
     }
-    //If user does not have address stored in cache
+    //If user does not have address stored in browser cache
     if (localStorage.getItem("address") === null) {
       localStorage.setItem("address", accounts[0]);
     }
@@ -40,16 +44,18 @@ export const AuthContextProvider = (props) => {
     setSigner(ethersProvider.getSigner());
   };
 
+  //Logout function
   const logoutHandler = () => {
     setAddress("");
     setUserLoggedIn(false);
     localStorage.removeItem("address");
   };
 
-  const switchAccountHandler = async (account) => {
-    localStorage.setItem("address", account);
-    setAddress(account);
-  };
+  //
+  // const switchAccountHandler = async (account) => {
+  //   localStorage.setItem("address", account);
+  //   setAddress(account);
+  // };
 
   const contextValue = {
     isLoggedIn: userLoggedIn,
@@ -58,7 +64,7 @@ export const AuthContextProvider = (props) => {
     provider: provider,
     login: loginHandler,
     logout: logoutHandler,
-    switchAccount: switchAccountHandler,
+    // switchAccount: switchAccountHandler,
   };
 
   return (

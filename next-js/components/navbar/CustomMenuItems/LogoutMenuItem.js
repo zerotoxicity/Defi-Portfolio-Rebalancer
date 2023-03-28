@@ -1,5 +1,9 @@
 import { Image } from "@chakra-ui/react";
 
+/**
+ * Menu component that shows logout icon and text
+ * @component
+ */
 const LogOutMenuItem = () => {
   return (
     <>

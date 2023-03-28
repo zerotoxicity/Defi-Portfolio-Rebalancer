@@ -16,8 +16,8 @@ interface ILendingProtocolCore {
     function withdraw(address account, uint256 amount) external;
 
     /**
-     * Transfers msg.sender asset to another Rebalancer contract
-     * @param nextRebalancer  Address of Rebalancer contract to be transferred to
+     * Transfers msg.sender asset to another Rebalancer pool contract
+     * @param nextRebalancer  Address of Rebalancer pool contract to be transferred to
      * @param amount Amount to be transferred
      */
     function moveToAnotherRebalancer(
@@ -51,7 +51,7 @@ interface ILendingProtocolCore {
     function getProtocols() external view returns (string[] memory);
 
     /**
-     * Get the address of Rebalancer contract leveraging the protocol - where yield is being farmed
+     * Get the address of Rebalancer pool contract leveraging the protocol - where yield is being farmed
      */
     function getCurrentBest() external view returns (address);
 

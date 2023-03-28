@@ -1,6 +1,9 @@
 import { Heading, Image, Stack, Grid, GridItem, Text } from "@chakra-ui/react";
 
-// Component displaying logo and text of Rebalancer
+/**
+ * Component displaying logo and text of Rebalancer
+ * @component
+ */
 const Logo = () => {
   return (
     <Stack direction="row">

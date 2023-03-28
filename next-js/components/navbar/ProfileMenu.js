@@ -11,7 +11,12 @@ import AuthContext from "store/auth-context";
 import LogOutMenuItem from "./CustomMenuItems/LogoutMenuItem";
 import ProfileIcon from "./ProfileIcon";
 
-// Component containing user icon and address after logging in
+/**
+ *  A menu component that displays user jazzicon and wallet address
+ *  When the menu is clicked, a logout button will be shown
+ * @component
+ *
+ */
 const ProfileMenu = () => {
   const authContext = useContext(AuthContext);
 

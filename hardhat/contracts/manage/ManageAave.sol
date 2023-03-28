@@ -36,7 +36,11 @@ contract ManageAave is ALendingProtocol {
         _protocol = "AAVE";
     }
 
-    ///@inheritdoc ILendingProtocolCore
+    /**
+     * Get conversion rate from Aave
+     * @dev Aave conversion rate of underlying to aToken is 1 
+     * @inheritdoc ILendingProtocolCore
+     */
     function getConversionRate() public pure override returns (uint256) {
         return 1;
     }
@@ -111,7 +115,10 @@ contract ManageAave is ALendingProtocol {
         return aprArr;
     }
 
-    ///@inheritdoc ILendingProtocolCore
+    /**
+     * Retrieve the APR, of asset used in this contract, from Aave
+     * @dev APR is retrieved from Aave lending pool's liquidity rate
+     */
     function getAPR() public view override returns (uint256) {
         address lendingPoolAddr = ILendingPoolAddressesProvider(
             _poolProviderAddr

@@ -1,6 +1,16 @@
 import Navbar from "./navbar/Navbar";
 
-// Header component
+/**
+ * Header component that wraps NavBar around all children components
+ * @example
+ * // Sample usage
+ *
+ * <Header>
+ *   <Component {...pageProps} />
+ * </Header>
+ * @param {*} children  Children components such as the body of the webpage
+ *
+ */
 const Header = ({ children }) => {
   return (
     <>

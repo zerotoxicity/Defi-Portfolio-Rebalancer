@@ -21,12 +21,20 @@ contract ManageComp is ALendingProtocol {
         address asset
     ) public virtual initializer {
         __ALendingProtocol_init(pToken, rebalancerToken, asset);
+        
+        //As of March 2023, one block is mined every 12s
         _blocksPerYear = (60 / 12) * 60 * 24 * 365;
         IERC20(_asset).approve(_pToken, type(uint256).max);
         _protocol = "COMP";
     }
 
-    ///@inheritdoc ILendingProtocolCore
+    /**
+     * Get conversion rate from Compound
+     * @dev Compound conversion rate of underlying to cToken can be attained 
+     * from invoking the cToken's exchangeRateStored() function
+     *  
+     * @inheritdoc ILendingProtocolCore
+     */
     function getConversionRate() public view override returns (uint256) {
         return ICToken(_pToken).exchangeRateStored();
     }
@@ -116,7 +124,10 @@ contract ManageComp is ALendingProtocol {
         return aprArr;
     }
 
-    ///@inheritdoc ILendingProtocolCore
+    /**
+     * Retrieve the APR, of asset used in this contract, from Compound
+     * @dev APR is calculated from multiplying Compound's supply rate per block and total number of blocks in a year
+     */
     function getAPR() public view virtual override returns (uint256) {
         return ICToken(_pToken).supplyRatePerBlock() * _blocksPerYear;
     }

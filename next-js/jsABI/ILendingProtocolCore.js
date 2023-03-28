@@ -1,3 +1,6 @@
+/**
+ * ABI of ILendingProtocol in JSON format
+ */
 export const ILENDINGPROTOCOL_ABI = `[
   {
     "inputs": [],

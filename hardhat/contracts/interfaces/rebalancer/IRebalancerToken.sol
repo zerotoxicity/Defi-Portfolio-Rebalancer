@@ -18,7 +18,7 @@ interface IRebalancerToken {
     function getAuthorised(address entity) external view returns (bool);
 
     /**
-     * Get the address of the Rebalancer contract tied to this contract
+     * Get the address of the Rebalancer pool contract tied to this contract
      */
     function getManageProtocol() external view returns (address);
 
@@ -42,8 +42,8 @@ interface IRebalancerToken {
     function setAuthorised(address entity, bool authorised) external;
 
     /**
-     * Change the address of the Rebalancer contract tied to this contract
-     * @param manageProtocol address of new Rebalancer contract
+     * Change the address of the Rebalancer pool contract tied to this contract
+     * @param manageProtocol address of new Rebalancer pool contract
      */
     function setManageProtocol(address manageProtocol) external;
 
@@ -68,7 +68,7 @@ interface IRebalancerToken {
 
     /**
      * Transfers all protocol tokens to oldRebProtocol
-     * @param oldRebProtocol previously Rebalancer contract with the highest APY
+     * @param oldRebProtocol previously Rebalancer pool contract with the highest APY
      */
     function transferPToken(address oldRebProtocol) external returns (uint256);
 }

@@ -10,7 +10,7 @@ import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
 
 import "hardhat/console.sol";
 
-/// Rebalancer contract with rebalancing feature
+/// Rebalancer pool contract with rebalancing feature
 contract ManageMultiple is
     IManageMultiple,
     Initializable,
@@ -30,7 +30,7 @@ contract ManageMultiple is
 
     /**
      * Constructor
-     * @param manageProtocols Array of leveraged Rebalancer contracts
+     * @param manageProtocols Array of leveraged Rebalancer pool contracts
      */
     function initialize(address[] memory manageProtocols) public initializer {
         __UUPSUpgradeable_init();
@@ -260,10 +260,10 @@ contract ManageMultiple is
 
     /**
      * Implementation of rebalancing
-     * @param nextBest Address of the new Rebalancer contract with the highest best APY
+     * @param nextBest Address of the new Rebalancer pool contract with the highest best APY
      */
     function _rebWithSupply(address nextBest) private {
-        //Transfer all pToken to the previous Rebalancer contract
+        //Transfer all pToken to the previous Rebalancer pool contract
         IRebalancerToken(_rebalancerToken).transferPToken(_currentBest);
         //Withdraw all funds from the old protocol
         IALendingProtocol(_currentBest).rebalancingWithdraw(nextBest);

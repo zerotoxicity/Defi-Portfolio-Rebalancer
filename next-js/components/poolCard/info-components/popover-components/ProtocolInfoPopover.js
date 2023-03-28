@@ -7,6 +7,24 @@ import {
   PopoverTrigger,
 } from "@chakra-ui/react";
 import PopoverBodyContent from "./PopoverBodyContent";
+
+/**
+ * Displays the protocol logo that shows a popover component when hovering on top of the logo
+ * @component
+ *
+ * @example
+ * //Sample usage
+ *
+ * <ProtocolInfoPopover
+ *  protocol = "Aave"
+ *  selected = True
+ *  apy = 1.02
+ * />
+ *
+ * @param {*} protocol Name of the protocol
+ * @param {*} selected True if protocol is the protocol that yield is currently being farmed on
+ * @param {*} apy APY of protocol
+ */
 const ProtocolInfoPopover = ({ protocol, selected, apy }) => {
   const selectedImgStyle = selected
     ? { border: "4px", borderRadius: "full", borderColor: "primary.500" }

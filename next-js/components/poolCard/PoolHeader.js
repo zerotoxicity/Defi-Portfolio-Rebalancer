@@ -1,5 +1,9 @@
 import { Grid, GridItem, Text } from "@chakra-ui/react";
 
+/**
+ * Component containing the header text for the list of pool
+ *
+ */
 const PoolHeader = () => {
   return (
     <Grid templateColumns="repeat(9,1fr)" p={{ base: 0, sm: 5 }}>

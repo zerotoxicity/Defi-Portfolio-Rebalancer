@@ -1,6 +1,22 @@
-import { Box, Flex, Image, Stack, Text } from "@chakra-ui/react";
+import { Box, Flex } from "@chakra-ui/react";
 import ProtocolInfoPopover from "./popover-components/ProtocolInfoPopover";
 
+/**
+ * This component is part of the PoolInfo component
+ * It displays the logo and details of protocols leverage in this pool
+ * @component
+ *
+ * @example
+ * //Sample usage
+ *
+ * <PoolInfoProtocol
+ *  protocols = ["Aave"]
+ *  apy = 1.03
+ * />
+ *
+ * @param {*} protocols list of protocol names,that are being utilized in this pool
+ * @param {*} apy highest APY in this pool
+ */
 const PoolInfoProtocol = ({ protocols, apy }) => {
   const maxAPY = Number(Math.max(...apy)).toFixed(2);
   const protocolsLength = protocols.length;

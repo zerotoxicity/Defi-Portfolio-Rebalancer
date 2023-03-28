@@ -11,6 +11,20 @@ import {
 import { useRef } from "react";
 import ModalBodyContent from "./modal-components/ModalBodyContent";
 
+/**
+ * This component is part of the PoolInfo component
+ * It displays the "Manage" button that will spawn a modal component
+ * @component
+ *
+ * @example
+ * //Sample usage
+ *
+ * <PoolInfoManage
+ *  contractAddr = "0xE7FF84Df24A9a252B6E8A5BB093aC52B1d8bEEdf"
+ * />
+ *
+ * @param {*} contractAddr Address of this Rebalancer pool contract
+ */
 const PoolInfoManage = ({ contractAddr }) => {
   const { isOpen, onOpen, onClose } = useDisclosure();
   const initialRef = useRef(null);
