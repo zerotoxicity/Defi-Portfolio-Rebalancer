@@ -1,6 +1,8 @@
 // SPDX-License-Identifier: GPL-3.0
 pragma solidity 0.8.10;
 
+// Interface of Uniswap Router
+// Used to swap ETH for DAI and WBTC
 interface UniswapV2Router02 {
     function WETH() external view returns (address);
 

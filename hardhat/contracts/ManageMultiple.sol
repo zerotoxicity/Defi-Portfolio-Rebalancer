@@ -1,8 +1,8 @@
 pragma solidity 0.8.10;
 
-import "./interfaces/IALendingProtocol.sol";
-import "./interfaces/IManageMultiple.sol";
-import "./RebalancerToken.sol";
+import "./interfaces/rebalancer/IALendingProtocol.sol";
+import "./interfaces/rebalancer/IManageMultiple.sol";
+import "./interfaces/rebalancer/IRebalancerToken.sol";
 import "@openzeppelin/contracts/interfaces/IERC20.sol";
 import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 import "@openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol";
@@ -10,6 +10,7 @@ import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
 
 import "hardhat/console.sol";
 
+/// Rebalancer contract with rebalancing feature
 contract ManageMultiple is
     IManageMultiple,
     Initializable,
@@ -21,11 +22,16 @@ contract ManageMultiple is
     address private _asset;
     address private _rebalancerToken;
 
+    /// Modifier to check if rebalancing is required
     modifier rebalanceCheck() {
         _rebalance();
         _;
     }
 
+    /**
+     * Constructor
+     * @param manageProtocols Array of leveraged Rebalancer contracts
+     */
     function initialize(address[] memory manageProtocols) public initializer {
         __UUPSUpgradeable_init();
         __Ownable_init();
@@ -55,6 +61,7 @@ contract ManageMultiple is
 
     function _authorizeUpgrade(address) internal override onlyOwner {}
 
+    ///@inheritdoc ILendingProtocolCore
     function supply(address account, uint256 amount) external rebalanceCheck {
         uint256 all = IERC20(_asset).allowance(msg.sender, address(this));
         require(all >= amount, "Increase allowance");
@@ -62,6 +69,9 @@ contract ManageMultiple is
         IALendingProtocol(_currentBest).supply(account, amount);
     }
 
+    /**
+     * Implementation of withdrawal function
+     */
     function _withdraw(address account, uint256 amount) internal {
         require(
             IERC20(_rebalancerToken).allowance(msg.sender, address(this)) >=
@@ -78,18 +88,24 @@ contract ManageMultiple is
         IALendingProtocol(_currentBest).withdraw(account, amount);
     }
 
+    ///@inheritdoc ILendingProtocolCore
     function withdraw(address account, uint256 amount) external rebalanceCheck {
         _withdraw(account, amount);
     }
 
+    ///@inheritdoc IManageMultiple
     function rebalance() external {
         _rebalance();
     }
 
+    /**
+     * Implementation of rebalance()
+     */
     function _rebalance() private {
         address nextBest = _getBestAPR();
         if (_currentBest != nextBest) {
             address pToken = IALendingProtocol(_currentBest).getpToken();
+            // Shift assets if there are pTokens and rTokens have been minted
             if (
                 IERC20(pToken).balanceOf(_rebalancerToken) > 0 &&
                 IERC20(_rebalancerToken).totalSupply() > 0
@@ -117,18 +133,22 @@ contract ManageMultiple is
         return nextBest;
     }
 
+    ///@inheritdoc ILendingProtocolCore
     function getAsset() external view returns (address) {
         return _asset;
     }
 
+    ///@inheritdoc ILendingProtocolCore
     function getAPR() external view returns (uint256) {
         return IALendingProtocol(_currentBest).getAPR();
     }
 
+    ///@inheritdoc ILendingProtocolCore
     function getpToken() external view returns (address) {
         return IALendingProtocol(_currentBest).getpToken();
     }
 
+    ///@inheritdoc ILendingProtocolCore
     function getProtocols() external view returns (string[] memory) {
         uint256 count = 0;
         for (uint i = 0; i < _manageProtocols.length; i++) {
@@ -150,6 +170,7 @@ contract ManageMultiple is
         return protocolArr;
     }
 
+    ///@inheritdoc ILendingProtocolCore
     function getAllAPR() external view returns (uint256[] memory) {
         uint256 count = 0;
         uint256[] memory aprArr = new uint256[](_manageProtocols.length);
@@ -160,18 +181,22 @@ contract ManageMultiple is
         return aprArr;
     }
 
+    ///@inheritdoc ILendingProtocolCore
     function getCurrentBest() external view returns (address) {
         return _currentBest;
     }
 
+    ///@inheritdoc ILendingProtocolCore
     function getConversionRate() external view returns (uint256) {
         return IALendingProtocol(_currentBest).getConversionRate();
     }
 
+    ///@inheritdoc ILendingProtocolCore
     function getRebalancerTokenAddress() external view returns (address) {
         return _rebalancerToken;
     }
 
+    ///@inheritdoc IManageMultiple
     function setManageProtocol(
         address[] memory manageProtocols
     ) external onlyOwner {
@@ -214,6 +239,7 @@ contract ManageMultiple is
         _manageProtocols = manageProtocols;
     }
 
+    ///@inheritdoc ILendingProtocolCore
     function moveToAnotherRebalancer(
         address nextRebalancer,
         uint256 amount
@@ -232,9 +258,16 @@ contract ManageMultiple is
         ILendingProtocolCore(nextRebalancer).supply(msg.sender, balance);
     }
 
+    /**
+     * Implementation of rebalancing
+     * @param nextBest Address of the new Rebalancer contract with the highest best APY
+     */
     function _rebWithSupply(address nextBest) private {
+        //Transfer all pToken to the previous Rebalancer contract
         IRebalancerToken(_rebalancerToken).transferPToken(_currentBest);
+        //Withdraw all funds from the old protocol
         IALendingProtocol(_currentBest).rebalancingWithdraw(nextBest);
+        //Supply into the new protocol
         IALendingProtocol(nextBest).rebalancingSupply();
     }
 }

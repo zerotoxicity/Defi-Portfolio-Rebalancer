@@ -7,6 +7,7 @@ import "./ManageComp.sol";
 
 //Mantissa = 10^18
 contract ManageCompWETH is ManageComp {
+    ///@inheritdoc ManageComp
     function initialize(
         address pToken,
         address rebalancerToken,
@@ -18,6 +19,7 @@ contract ManageCompWETH is ManageComp {
     //Receive eth
     receive() external payable {}
 
+    ///@inheritdoc ManageComp
     function _supplyProtocol(uint256 amount) internal override {
         IWETH(_asset).withdraw(amount);
         ICETH(_pToken).mint{value: amount}();
@@ -27,6 +29,7 @@ contract ManageCompWETH is ManageComp {
         );
     }
 
+    ///@inheritdoc ManageComp
     function _withdrawProtocol(
         address account,
         uint256 amount
@@ -37,12 +40,16 @@ contract ManageCompWETH is ManageComp {
         IWETH(_asset).transfer(account, expectedValue);
     }
 
+    ///@inheritdoc ManageComp
     function _supply(address account, uint256 amount) internal override {
         mintRebalancerTokens(account, amount);
         _supplyProtocol(amount);
     }
 
-    // Convert WETH to ETH then deposit
+    /**
+     * @dev Convert WETH to ETH then deposit
+     *@inheritdoc ManageComp
+     */
     function supply(
         address account,
         uint256 amount
@@ -50,12 +57,16 @@ contract ManageCompWETH is ManageComp {
         _supply(account, amount);
     }
 
+    ///@inheritdoc ManageComp
     function _withdraw(address account, uint256 amount) internal override {
         uint256 amtOfPTokens = withdrawRebalancerTokens(amount);
         _withdrawProtocol(account, amtOfPTokens);
     }
 
-    //Convert CETH -> ETH -> WETH
+    /**
+     * @dev Convert CETH -> ETH -> WETH
+     * @inheritdoc ManageComp
+     */
     function withdraw(
         address account,
         uint256 amount

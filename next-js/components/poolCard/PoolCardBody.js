@@ -1,9 +1,6 @@
 import { Box, CardBody, Skeleton } from "@chakra-ui/react";
-import {
-  AssetAddressEnum,
-  manageContractAddresses,
-} from "components/constants";
-import { calculateAPYArr } from "components/helperFunctions";
+import { AssetAddressEnum, manageContractAddresses } from "helper/constants";
+import { calculateAPYArr } from "helper/helperFunctions";
 import { ethers } from "ethers";
 import { ILENDINGPROTOCOL_ABI } from "jsABI/ILendingProtocolCore";
 import { useContext, useEffect, useState } from "react";
@@ -24,7 +21,6 @@ const PoolCardBody = () => {
         const keyArr = Object.keys(contracts.addr);
         for (var j = 0; j < keyArr.length; j++) {
           const address = keyArr[j];
-
           const manageContract = new ethers.Contract(
             address,
             ILENDINGPROTOCOL_ABI,

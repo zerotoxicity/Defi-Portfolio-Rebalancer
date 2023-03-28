@@ -1,6 +1,7 @@
 //SPDX-License-Identifier: UNLICENSED
 pragma solidity 0.8.10;
 
+// Interface of Compound Token contracts
 interface ICToken {
     function mint(uint mintAmount) external returns (uint);
 
@@ -16,24 +17,18 @@ interface ICToken {
 
     function approve(address spender, uint amount) external returns (bool);
 
-    function allowance(address owner, address spender)
-        external
-        view
-        returns (uint);
+    function allowance(
+        address owner,
+        address spender
+    ) external view returns (uint);
 
     function balanceOf(address owner) external view returns (uint);
 
     function balanceOfUnderlying(address owner) external returns (uint);
 
-    function getAccountSnapshot(address account)
-        external
-        view
-        returns (
-            uint,
-            uint,
-            uint,
-            uint
-        );
+    function getAccountSnapshot(
+        address account
+    ) external view returns (uint, uint, uint, uint);
 
     function borrowRatePerBlock() external view returns (uint);
 

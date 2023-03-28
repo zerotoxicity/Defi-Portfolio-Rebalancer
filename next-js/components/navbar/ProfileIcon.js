@@ -4,6 +4,7 @@ import { Heading, Box, Stack, Text } from "@chakra-ui/react";
 import AuthContext from "store/auth-context";
 import { ChevronDownIcon } from "@chakra-ui/icons";
 
+// Get user's metamask Jazzicon
 const ProfileIcon = () => {
   const authContext = useContext(AuthContext);
   const address = authContext.address;

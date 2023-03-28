@@ -11,7 +11,7 @@ import {
   ModalBody,
   Select,
 } from "@chakra-ui/react";
-import { manageContractAddresses } from "components/constants";
+import { manageContractAddresses } from "helper/constants";
 import { ethers } from "ethers";
 import { IERC20_ABI } from "jsABI/IERC20";
 import { ILENDINGPROTOCOL_ABI } from "jsABI/ILendingProtocolCore";
@@ -215,7 +215,7 @@ const ModalBodyContent = ({ initialRef, contractAddr }) => {
             onClick={async () => {
               setApprovalText("Please wait..");
               setApproveButtonClickable(false);
-              const amt = ethers.utils.parseEther(amount);
+              const amt = ethers.utils.parseUnits(amount, mantissa);
               try {
                 await tokenContract.approve(contractAddr, amt);
                 tokenContract.on("Approval", (owner, spender, value) => {

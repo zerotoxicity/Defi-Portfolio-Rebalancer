@@ -11,6 +11,7 @@ import AuthContext from "store/auth-context";
 import LogOutMenuItem from "./CustomMenuItems/LogoutMenuItem";
 import ProfileIcon from "./ProfileIcon";
 
+// Component containing user icon and address after logging in
 const ProfileMenu = () => {
   const authContext = useContext(AuthContext);
 

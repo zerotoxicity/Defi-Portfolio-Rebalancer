@@ -1,5 +1,5 @@
 import { Box, Grid, GridItem, Image, Stack, Text } from "@chakra-ui/react";
-import { TokensEnum } from "components/constants";
+import { TokensEnum } from "helper/constants";
 
 const PoolInfoAsset = ({ asset }) => {
   const enumKeys = Object.keys(TokensEnum);

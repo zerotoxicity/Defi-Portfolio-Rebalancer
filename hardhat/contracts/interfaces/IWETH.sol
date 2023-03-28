@@ -1,15 +1,17 @@
 //SPDX-License-Identifier: UNLICENSED
 pragma solidity 0.8.10;
 
+//Interface of WETH contract
 interface IWETH {
-    function allowance(address owner, address spender)
-        external
-        view
-        returns (uint256 remaining);
+    function allowance(
+        address owner,
+        address spender
+    ) external view returns (uint256 remaining);
 
-    function approve(address spender, uint256 value)
-        external
-        returns (bool success);
+    function approve(
+        address spender,
+        uint256 value
+    ) external returns (bool success);
 
     function balanceOf(address owner) external view returns (uint256 balance);
 
@@ -21,9 +23,10 @@ interface IWETH {
 
     function totalSupply() external view returns (uint256 totalTokensIssued);
 
-    function transfer(address to, uint256 value)
-        external
-        returns (bool success);
+    function transfer(
+        address to,
+        uint256 value
+    ) external returns (bool success);
 
     function transferFrom(
         address from,

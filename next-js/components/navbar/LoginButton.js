@@ -2,6 +2,7 @@ import { Button, ButtonGroup, Box } from "@chakra-ui/react";
 import { useContext } from "react";
 import AuthContext from "store/auth-context";
 
+// Login button that is on the navbar
 const LoginButton = () => {
   const authContext = useContext(AuthContext);
 

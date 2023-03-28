@@ -1,7 +1,7 @@
 pragma solidity 0.8.10;
 
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
-import "./interfaces/ILendingProtocolCore.sol";
+import "./interfaces/rebalancer/ILendingProtocolCore.sol";
 import "./interfaces/IERC20Detailed.sol";
 import "./interfaces/ICToken.sol";
 import "./ALendingProtocol.sol";
@@ -27,6 +27,19 @@ contract RebalancerToken is
     uint256 private mantissa;
     mapping(address => bool) _authorised;
 
+    /// Modifier to check that if msg.sender is authorised to invoke Rebalancer Token functions
+    modifier onlyAuthorised() {
+        require(_authorised[msg.sender] == true, "Unauthorised");
+        _;
+    }
+
+    /**
+     * Constructor
+     * @param name Name of token
+     * @param symbol Symbol of token
+     * @param pToken Address of the protocol, that Rebalancer is currently farming yield on, token
+     * @param underlying Address of underlying asset
+     */
     function initialize(
         string memory name,
         string memory symbol,
@@ -42,58 +55,69 @@ contract RebalancerToken is
         mantissa = IERC20Detailed(pToken).decimals();
     }
 
+    /**
+     * Decimals of the token
+     */
     function decimals() public view override returns (uint8) {
         return uint8(mantissa);
     }
 
     function _authorizeUpgrade(address) internal override onlyOwner {}
 
-    modifier onlyAuthorised() {
-        require(_authorised[msg.sender] == true, "Unauthorised");
-        _;
-    }
-
+    ///@inheritdoc IRebalancerToken
     function getpToken() public view returns (address) {
         return _pToken;
     }
 
+    ///@inheritdoc IRebalancerToken
     function getUnderlying() public view returns (address) {
         return _underlying;
     }
 
+    ///@inheritdoc IRebalancerToken
     function getAuthorised(address entity) public view returns (bool) {
         return _authorised[entity];
     }
 
+    ///@inheritdoc IRebalancerToken
     function getManageProtocol() public view returns (address) {
         return _manageProtocol;
     }
 
+    ///@inheritdoc IRebalancerToken
     function setpToken(address pToken) public onlyAuthorised {
         _pToken = pToken;
     }
 
+    ///@inheritdoc IRebalancerToken
     function setUnderlying(address underlying) public onlyAuthorised {
         _underlying = underlying;
     }
 
+    ///@inheritdoc IRebalancerToken
     function setAuthorised(address entity, bool authorised) public onlyOwner {
         _authorised[entity] = authorised;
     }
 
+    ///@inheritdoc IRebalancerToken
     function setManageProtocol(address manageProtocol) public onlyAuthorised {
         _manageProtocol = manageProtocol;
         _authorised[manageProtocol] = true;
         _pToken = ILendingProtocolCore(manageProtocol).getpToken();
     }
 
-    //Conversion rate of Rebalancer Token to the amount of _pToken held by this
+    /**
+     * Conversion rate of Rebalancer Token to the amount of _pToken
+     */
     function rToPtokenConversionRate() public view returns (uint256) {
         uint256 pTokenAmount = IERC20(_pToken).balanceOf(address(this));
         if (pTokenAmount == 0 || totalSupply() == 0) return 0;
         return (pTokenAmount * mantissa) / totalSupply();
     }
 
+    /**
+     * Get conversion rate of pTokens to its underlying asset
+     */
     function _getConversionRate() private view returns (uint256) {
         require(
             _manageProtocol != address(0),
@@ -102,14 +126,15 @@ contract RebalancerToken is
         return ILendingProtocolCore(_manageProtocol).getConversionRate();
     }
 
-    /// Get Rebalancer Token price in underlying asset. e.g., 5 Rebalancer token == 5 WETH
+    /**
+     * Get Rebalancer Token price in underlying asset. e.g., 5 Rebalancer token == 5 WETH
+     */
     function getRebalancerPrice() public view virtual returns (uint256 price) {
         price = ((rToPtokenConversionRate() * _getConversionRate())); //Price in underlying asset
         if (_getConversionRate() != 1) price /= mantissa;
     }
 
-    //Mint Rebalancer Tokens based on its price
-    /// @param account the end user aka tx.origin
+    ///@inheritdoc IRebalancerToken
     function mintRTokens(
         address account,
         uint256 amount
@@ -126,8 +151,7 @@ contract RebalancerToken is
         _mint(account, mintAmount);
     }
 
-    /// Withdrawing of Rebalancer Token
-    /// Redemption of pToken will be done in another contract
+    ///@inheritdoc IRebalancerToken
     function withdrawRTokens(
         address account,
         uint256 amount
@@ -147,11 +171,12 @@ contract RebalancerToken is
         return amtOfPTokens;
     }
 
+    ///@inheritdoc IRebalancerToken
     function transferPToken(
-        address oldProtocol
+        address oldRebProtocol
     ) external onlyAuthorised returns (uint256) {
         uint256 amount = IERC20(_pToken).balanceOf(address(this));
-        IERC20(_pToken).transfer(oldProtocol, amount);
+        IERC20(_pToken).transfer(oldRebProtocol, amount);
         return amount;
     }
 }
