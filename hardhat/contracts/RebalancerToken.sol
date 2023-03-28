@@ -14,6 +14,7 @@ import "hardhat/console.sol";
 
 //For individual protocols
 contract RebalancerToken is
+    IRebalancerToken,
     Initializable,
     UUPSUpgradeable,
     ERC20Upgradeable,
