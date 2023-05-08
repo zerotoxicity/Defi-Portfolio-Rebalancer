@@ -1,6 +1,7 @@
 const { ethers, network } = require("hardhat");
 const { networkConfig } = require("../helper-hardhat-config");
 const { deployContract } = require("../test/helpers/testHelper");
+const fs = require("fs");
 
 //Address of Aave pool address provider
 const poolProviderAddress =
@@ -73,6 +74,27 @@ async function deployManageMultiple(
   }
 
   await rebalancerTokenContract.setManageProtocol(manageMultiple.address);
+  await manageAave.setWrapper(manageMultiple.address, true);
+  await manageComp.setWrapper(manageMultiple.address, true);
+  if (assetName === "ETH") {
+    await manageMultiple.setNextBest(manageComp.address);
+    let arr = [manageMultiple.address, manageComp.address];
+    const manageMultipleAddr = JSON.stringify(arr);
+
+    fs.writeFileSync(
+      __dirname + "/demoAddr.js",
+      "const manageMultipleAddr = " +
+        manageMultipleAddr +
+        "\n module.exports = { manageMultipleAddr };",
+      "utf8",
+      (err) => {
+        if (err) {
+          console.log(err);
+        }
+      }
+    );
+  }
+
   console.log(
     assetName,
     "ManageMultiple is deployed to: ",

@@ -3,7 +3,7 @@ import {
   AssetAddressEnum,
   rebalancerContractAddresses,
 } from "helper/constants";
-import { calculateAPYArr } from "helper/helperFunctions";
+import { calculateAPY, calculateAPYArr } from "helper/helperFunctions";
 import { ethers } from "ethers";
 import { ILENDINGPROTOCOL_ABI } from "jsABI/ILendingProtocolCore";
 import { useContext, useEffect, useState } from "react";
@@ -40,9 +40,11 @@ const PoolCardBody = () => {
 
           //Get information from the contract
           const asset = (await manageContract.getAsset()).toLowerCase();
-
+          const selectedAPR = await manageContract.getAPR();
+          const selectedAPY = calculateAPY(
+            ethers.utils.formatUnits(selectedAPR, 18)
+          );
           const protocolArr = await manageContract.getProtocols();
-
           const allAPR = await manageContract.getAllAPR();
           const allAPY = calculateAPYArr(allAPR);
 
@@ -52,6 +54,7 @@ const PoolCardBody = () => {
             protocolArr: protocolArr,
             apy: allAPY,
             contractAddr: address,
+            selectedAPY: selectedAPY,
           };
           detailsArr.push(contractObj);
         }
@@ -77,6 +80,7 @@ const PoolCardBody = () => {
                 protocols={manageContractsDetails[item].protocolArr}
                 apy={manageContractsDetails[item].apy}
                 contractAddr={manageContractsDetails[item].contractAddr}
+                selectedAPY={manageContractsDetails[item].selectedAPY}
               />
             );
           })

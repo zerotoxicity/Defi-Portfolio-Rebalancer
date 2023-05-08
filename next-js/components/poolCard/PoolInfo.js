@@ -23,7 +23,7 @@ import PoolInfoProtocol from "./info-components/PoolInfoProtocol";
  * @param contractAddr address of the Rebalancer
  *
  */
-const PoolInfo = ({ asset, protocols, apy, contractAddr }) => {
+const PoolInfo = ({ asset, protocols, apy, contractAddr, selectedAPY }) => {
   const maxAPY = Number(Math.max(...apy)).toFixed(2);
   return (
     <Grid templateColumns="repeat(9,1fr)" mt={{ base: 3, sm: 2 }}>
@@ -31,10 +31,14 @@ const PoolInfo = ({ asset, protocols, apy, contractAddr }) => {
         <PoolInfoAsset asset={asset} />
       </GridItem>
       <GridItem colStart={{ base: 4, sm: 4 }}>
-        <PoolInfoProtocol protocols={protocols} apy={apy} />
+        <PoolInfoProtocol
+          protocols={protocols}
+          apy={apy}
+          selectedAPY={selectedAPY}
+        />
       </GridItem>
       <GridItem colStart={{ base: 7, sm: 7 }} mt={{ base: 3, sm: 5 }}>
-        <Text fontSize={{ base: 12, sm: 15 }}>{maxAPY}%</Text>
+        <Text fontSize={{ base: 12, sm: 15 }}>{selectedAPY}%</Text>
       </GridItem>
       <GridItem colStart={9} mt={{ base: 1, sm: 3 }} mr={{ base: -4, sm: 0 }}>
         <PoolInfoManage contractAddr={contractAddr} />

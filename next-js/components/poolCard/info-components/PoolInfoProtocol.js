@@ -17,7 +17,7 @@ import ProtocolInfoPopover from "./popover-components/ProtocolInfoPopover";
  * @param {*} protocols list of protocol names,that are being utilized in this pool
  * @param {*} apy highest APY in this pool
  */
-const PoolInfoProtocol = ({ protocols, apy }) => {
+const PoolInfoProtocol = ({ protocols, apy, selectedAPY }) => {
   const maxAPY = Number(Math.max(...apy)).toFixed(2);
   const protocolsLength = protocols.length;
 
@@ -28,7 +28,7 @@ const PoolInfoProtocol = ({ protocols, apy }) => {
         <ProtocolInfoPopover
           key={index}
           protocol={p}
-          selected={apy[index] === maxAPY || protocols.length === 1}
+          selected={apy[index] === selectedAPY || protocols.length === 1}
           apy={apy[index]}
         />
       ))}

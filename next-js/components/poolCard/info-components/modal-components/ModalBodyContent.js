@@ -5,6 +5,7 @@ import {
   Input,
   ModalBody,
   Select,
+  Text,
 } from "@chakra-ui/react";
 import { rebalancerContractAddresses } from "helper/constants";
 import { useState } from "react";
@@ -36,6 +37,7 @@ const ModalBodyContent = ({ initialRef, contractAddr }) => {
   const [amount, setAmount] = useState("");
   const [transferAddr, setTransferAddr] = useState("");
   const [validAmt, setValidAmt] = useState(false);
+  const [invalidTransfer, setInvalidTransfer] = useState(false);
 
   //Retrieve asset name and mantissa
   for (var i = 0; i < rebalancerContractAddresses.contracts.length; i++) {
@@ -97,13 +99,18 @@ const ModalBodyContent = ({ initialRef, contractAddr }) => {
           </Select>
         </FormControl>
       </Flex>
-
+      {invalidTransfer && (
+        <Text as="b" color="red">
+          Please select a transfer pool
+        </Text>
+      )}
       <ModalButtonGroup
         validAmt={validAmt}
         mantissa={mantissa}
         amount={amount}
         contractAddr={contractAddr}
         transferAddr={transferAddr}
+        setInvalidTransfer={setInvalidTransfer}
       />
     </ModalBody>
   );

@@ -38,6 +38,7 @@ const ModalButtonGroup = ({
   mantissa,
   contractAddr,
   transferAddr = "",
+  setInvalidTransfer,
 }) => {
   const [approvalText, setApprovalText] = useState("Approve funds");
   const [approved, setApproved] = useState(true);
@@ -108,9 +109,12 @@ const ModalButtonGroup = ({
 
   //Transfer function
   async function transferHandler() {
-    if (!transferAddr) return;
+    if (!transferAddr) {
+      setInvalidTransfer(true);
+      return;
+    }
     const addr = await manageContractObj.getRebalancerTokenAddress();
-
+    setInvalidTransfer(false);
     if (await allowanceCheck(addr)) {
       setApproved(false);
     } else {
