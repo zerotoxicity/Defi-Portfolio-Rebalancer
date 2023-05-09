@@ -120,24 +120,6 @@ contract ManageMultiple is
         }
     }
 
-    function setNextBest(address nextBest) public {
-        if (_currentBest != nextBest) {
-            address pToken = IALendingProtocol(_currentBest).getpToken();
-            // Shift assets if there are pTokens and rTokens have been minted
-            if (
-                IERC20(pToken).balanceOf(_rebalancerToken) > 0 &&
-                IERC20(_rebalancerToken).totalSupply() > 0
-            ) {
-                _rebWithSupply(nextBest);
-            }
-
-            IRebalancerToken(_rebalancerToken).setpToken(
-                IALendingProtocol(nextBest).getpToken()
-            );
-            _currentBest = nextBest;
-        }
-    }
-
     function _getBestAPR() private view returns (address) {
         address nextBest = _currentBest;
         uint256 currentBestAPR = IALendingProtocol(_currentBest).getAPR();

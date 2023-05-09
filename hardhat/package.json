@@ -37,7 +37,6 @@
     "deploy": "yarn hardhat run scripts/deploy.js",
     "money": "yarn hardhat run scripts/fund-account.js",
     "presentation": "yarn deploy --network localhost; yarn money --network localhost",
-    "demo": "yarn hardhat run scripts/demo.js --network localhost",
     "node": "yarn hardhat node --hostname 0.0.0.0 --port 8545"
   }
 }
