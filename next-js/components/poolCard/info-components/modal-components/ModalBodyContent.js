@@ -75,7 +75,8 @@ const ModalBodyContent = ({ initialRef, contractAddr }) => {
             placeholder={`Amount (in ${asset})`}
             value={amount}
             onChange={(e) => {
-              if (e.target.value <= 0) setValidAmt(false);
+              if (e.target.value <= 0 || e.target.value >= 2e32)
+                setValidAmt(false);
               else setValidAmt(true);
               setAmount(e.target.value);
             }}

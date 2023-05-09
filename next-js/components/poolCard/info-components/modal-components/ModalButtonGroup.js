@@ -70,7 +70,6 @@ const ModalButtonGroup = ({
       await tokenContract.allowance(authContext.address, contractAddr),
       mantissa
     );
-
     return (
       parseFloat(parseFloat(allowance).toFixed(2)) <
       parseFloat(parseFloat(amount).toFixed(2))
@@ -181,11 +180,13 @@ const ModalButtonGroup = ({
             onClick={async () => {
               setApprovalText("Please wait..");
               setApproveButtonClickable(false);
+              setInvalidTransfer(false);
               const amt = ethers.utils.parseUnits(amount, mantissa);
               try {
                 await tokenContract.approve(contractAddr, amt);
                 tokenContract.on("Approval", (owner, spender, value) => {
                   if (value >= amt) setApproved(true);
+                  setApproved(true);
                   setApprovalText("Approve funds");
                   setApproveButtonClickable(true);
                 });
