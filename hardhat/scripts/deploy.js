@@ -53,20 +53,22 @@ async function deployContractsGroup(assetName, contractsObj) {
   const firstTokenChar = tokenName.charAt(0);
 
   var ERC20addr;
-
+  mantissaEight = false;
   if (assetName === "WETH") {
     ERC20addr = wethTokenAddress;
   } else if (assetName === "DAI") {
     ERC20addr = daiTokenAddress;
   } else {
     ERC20addr = wbtcTokenAddress;
+    mantissaEight = true;
   }
   // Deploys Rebalancer pool contract with rebalancing feature
   const rebMultiple = await deployManageMultiple(
     tokenName,
     ERC20addr,
     "RM" + tokenName,
-    "RM" + firstTokenChar
+    "RM" + firstTokenChar,
+    mantissaEight
   );
 
   // Deploys Rebalancer pool contract leveraging Aave
@@ -74,7 +76,8 @@ async function deployContractsGroup(assetName, contractsObj) {
     tokenName,
     ERC20addr,
     "RA" + tokenName,
-    "RA" + firstTokenChar
+    "RA" + firstTokenChar,
+    mantissaEight
   );
 
   var rebComp;
@@ -85,14 +88,16 @@ async function deployContractsGroup(assetName, contractsObj) {
       tokenName,
       ERC20addr,
       "RC" + tokenName,
-      "RC" + firstTokenChar
+      "RC" + firstTokenChar,
+      mantissaEight
     );
   } else {
     rebComp = await deployManageCompWETH(
       tokenName,
       ERC20addr,
       "RC" + tokenName,
-      "RC" + firstTokenChar
+      "RC" + firstTokenChar,
+      mantissaEight
     );
   }
   // Append addresses to contractsObj

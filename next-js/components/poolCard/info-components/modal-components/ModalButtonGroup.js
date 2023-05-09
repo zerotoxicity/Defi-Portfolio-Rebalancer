@@ -38,6 +38,7 @@ const ModalButtonGroup = ({
   mantissa,
   contractAddr,
   transferAddr = "",
+  setInvalidTransfer,
 }) => {
   const [approvalText, setApprovalText] = useState("Approve funds");
   const [approved, setApproved] = useState(true);
@@ -69,7 +70,6 @@ const ModalButtonGroup = ({
       await tokenContract.allowance(authContext.address, contractAddr),
       mantissa
     );
-
     return (
       parseFloat(parseFloat(allowance).toFixed(2)) <
       parseFloat(parseFloat(amount).toFixed(2))
@@ -108,9 +108,12 @@ const ModalButtonGroup = ({
 
   //Transfer function
   async function transferHandler() {
-    if (!transferAddr) return;
+    if (!transferAddr) {
+      setInvalidTransfer(true);
+      return;
+    }
     const addr = await manageContractObj.getRebalancerTokenAddress();
-
+    setInvalidTransfer(false);
     if (await allowanceCheck(addr)) {
       setApproved(false);
     } else {
@@ -177,11 +180,13 @@ const ModalButtonGroup = ({
             onClick={async () => {
               setApprovalText("Please wait..");
               setApproveButtonClickable(false);
+              setInvalidTransfer(false);
               const amt = ethers.utils.parseUnits(amount, mantissa);
               try {
                 await tokenContract.approve(contractAddr, amt);
                 tokenContract.on("Approval", (owner, spender, value) => {
                   if (value >= amt) setApproved(true);
+                  setApproved(true);
                   setApprovalText("Approve funds");
                   setApproveButtonClickable(true);
                 });

@@ -112,6 +112,7 @@ contract ManageMultiple is
             ) {
                 _rebWithSupply(nextBest);
             }
+
             IRebalancerToken(_rebalancerToken).setpToken(
                 IALendingProtocol(nextBest).getpToken()
             );

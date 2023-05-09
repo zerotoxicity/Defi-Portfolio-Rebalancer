@@ -1,0 +1,1 @@
+export const manageCompAddr = 0x2f321ed425c82E74925488139e1556f9B76a2551

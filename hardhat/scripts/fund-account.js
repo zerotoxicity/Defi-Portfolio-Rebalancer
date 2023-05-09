@@ -9,9 +9,9 @@ const {
 async function main() {
   const accounts = await ethers.getSigners();
   console.log("⏳ Funding account: %s ...", accounts[0].address);
-  await addWETHToAccount(accounts[1], ethers.utils.parseEther("50"));
-  await addWBTCToAccount(accounts[1], ethers.utils.parseEther("50"));
-  await addDaiToAccount(accounts[1], ethers.utils.parseEther("50"));
+  await addWETHToAccount(accounts[0], ethers.utils.parseEther("50"));
+  await addWBTCToAccount(accounts[0], ethers.utils.parseEther("50"));
+  await addDaiToAccount(accounts[0], ethers.utils.parseEther("50"));
   console.log("✅ Account funded!");
 }
 

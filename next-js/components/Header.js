@@ -3,7 +3,6 @@ import Navbar from "./navbar/Navbar";
 /**
  * Header component that wraps NavBar around all children components
  * @example
- * // Sample usage
  *
  * <Header>
  *   <Component {...pageProps} />
