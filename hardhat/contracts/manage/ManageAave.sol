@@ -1,9 +1,9 @@
 //SPDX-License-Identifier: UNLICENSED
 pragma solidity 0.8.10;
 
-import "../interfaces/IAToken.sol";
-import "../interfaces/ILendingPoolAddressesProvider.sol";
-import "../interfaces/ILendingPool.sol";
+import "../interfaces/misc/IAToken.sol";
+import "../interfaces/misc/ILendingPoolAddressesProvider.sol";
+import "../interfaces/misc/ILendingPool.sol";
 import "../ALendingProtocol.sol";
 import {DataTypes} from "../library/DataTypes.sol";
 
@@ -38,7 +38,7 @@ contract ManageAave is ALendingProtocol {
 
     /**
      * Get conversion rate from Aave
-     * @dev Aave conversion rate of underlying to aToken is 1 
+     * @dev Aave conversion rate of underlying to aToken is 1
      * @inheritdoc ILendingProtocolCore
      */
     function getConversionRate() public pure override returns (uint256) {

@@ -1,8 +1,8 @@
 //SPDX-License-Identifier: UNLICENSED
 pragma solidity 0.8.10;
 
-import "../interfaces/IWETH.sol";
-import "../interfaces/ICETH.sol";
+import "../interfaces/misc/IWETH.sol";
+import "../interfaces/misc/ICETH.sol";
 import "./ManageComp.sol";
 
 //Mantissa = 10^18

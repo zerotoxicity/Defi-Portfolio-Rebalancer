@@ -76,24 +76,6 @@ async function deployManageMultiple(
   await rebalancerTokenContract.setManageProtocol(manageMultiple.address);
   await manageAave.setWrapper(manageMultiple.address, true);
   await manageComp.setWrapper(manageMultiple.address, true);
-  if (assetName === "ETH") {
-    await manageMultiple.setNextBest(manageComp.address);
-    let arr = [manageMultiple.address, manageComp.address];
-    const manageMultipleAddr = JSON.stringify(arr);
-
-    fs.writeFileSync(
-      __dirname + "/demoAddr.js",
-      "const manageMultipleAddr = " +
-        manageMultipleAddr +
-        "\n module.exports = { manageMultipleAddr };",
-      "utf8",
-      (err) => {
-        if (err) {
-          console.log(err);
-        }
-      }
-    );
-  }
 
   console.log(
     assetName,

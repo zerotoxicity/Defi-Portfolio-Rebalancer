@@ -1,7 +1,7 @@
 //SPDX-License-Identifier: UNLICENSED
 pragma solidity 0.8.10;
 
-import "../interfaces/ICToken.sol";
+import "../interfaces/misc/ICToken.sol";
 import "../ALendingProtocol.sol";
 
 //Mantissa = 10^18
@@ -21,7 +21,7 @@ contract ManageComp is ALendingProtocol {
         address asset
     ) public virtual initializer {
         __ALendingProtocol_init(pToken, rebalancerToken, asset);
-        
+
         //As of March 2023, one block is mined every 12s
         _blocksPerYear = (60 / 12) * 60 * 24 * 365;
         IERC20(_asset).approve(_pToken, type(uint256).max);
@@ -30,9 +30,9 @@ contract ManageComp is ALendingProtocol {
 
     /**
      * Get conversion rate from Compound
-     * @dev Compound conversion rate of underlying to cToken can be attained 
+     * @dev Compound conversion rate of underlying to cToken can be attained
      * from invoking the cToken's exchangeRateStored() function
-     *  
+     *
      * @inheritdoc ILendingProtocolCore
      */
     function getConversionRate() public view override returns (uint256) {
